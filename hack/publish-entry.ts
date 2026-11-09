@@ -50,12 +50,33 @@ export function validateRelease(version: string, digest: string): void {
   }
 }
 
+// Keys the platform's ApplicationStackDefinition decoder accepts at the two
+// levels where this template uses YAML flow mappings. An unquoted comma inside
+// a flow mapping becomes an extra key; the platform rejects unknown fields and
+// marks the whole catalog CatalogInvalid, so refuse the document here.
+const allowedKeys = {
+  'spec.display': ['title', 'category', 'description', 'iconRef'],
+  'spec.access.accessKeys.scopes[]': ['name', 'description'],
+}
+
+export function assertKnownKeys(definition: Definition): void {
+  const check = (path: keyof typeof allowedKeys, value: unknown) => {
+    if (!value || typeof value !== 'object') return
+    const unknown = Object.keys(value).filter(key => !allowedKeys[path].includes(key))
+    if (unknown.length > 0) throw new Error(`${path} has unknown keys: ${unknown.join(', ')} (unquoted comma in a flow mapping?)`)
+  }
+  const spec = definition.spec as Definition['spec'] & { access?: { accessKeys?: { scopes?: unknown[] } } }
+  check('spec.display', spec.display)
+  for (const scope of spec.access?.accessKeys?.scopes ?? []) check('spec.access.accessKeys.scopes[]', scope)
+}
+
 export function renderEntry(template: string, version: string, digest: string, previous?: CatalogEntry, listing?: Listing): CatalogEntry {
   validateRelease(version, digest)
   const definition = YAML.parse(template) as Definition
   if (definition.apiVersion !== 'appthrust.io/v1alpha1' || definition.kind !== 'ApplicationStackDefinition' || definition.metadata.name !== 'agent-guide') {
     throw new Error('template must be the agent-guide ApplicationStackDefinition')
   }
+  assertKnownKeys(definition)
   if (previous && previous.slug !== 'agent-guide') throw new Error('previous entry must have slug agent-guide')
 
   // Every tag starts from the committed floor. Merge the store's history so the

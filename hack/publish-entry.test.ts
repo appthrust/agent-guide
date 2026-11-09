@@ -21,6 +21,15 @@ describe('renderEntry', () => {
     expect(definition.spec.releaseIdentityEnvPrefix).toBe('AGENT_GUIDE')
   })
 
+  test('refuses a description whose unquoted comma became an unknown key (v0.1.0 CatalogInvalid)', () => {
+    const broken = template.replace(
+      'description: "Read guide documents, skills and llms.txt"',
+      'description: Read guide documents, skills and llms.txt',
+    )
+    expect(broken).not.toBe(template)
+    expect(() => renderEntry(broken, '0.2.0', digest)).toThrow(/spec\.access\.accessKeys\.scopes\[\] has unknown keys: skills and llms\.txt/)
+  })
+
   test('merges persisted history on subsequent tags without mutating it', () => {
     const previous = renderEntry(template, '0.2.0', digest)
     previous.publishedAt = '2026-11-06T00:00:00Z'
