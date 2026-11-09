@@ -1,0 +1,171 @@
+@import 'tailwindcss';
+/* The app switcher (@appthrust/app-launcher) ships Tailwind classes, not CSS. */
+@source '../node_modules/@appthrust/app-launcher/dist';
+
+/*
+ * One accent color (indigo, Agent Guide's own); everything else is neutral
+ * stone. System font stack only, light only. Status colors are used only
+ * through <Notice> (src/ui). Rendered documents use `.guide-prose` below.
+ */
+@theme {
+  --font-sans: system-ui, -apple-system, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
+    'Noto Sans JP', Meiryo, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-accent: oklch(0.5 0.15 268);
+  --color-accent-strong: oklch(0.42 0.15 268);
+  --color-accent-soft: oklch(0.96 0.025 268);
+  --color-accent-line: oklch(0.86 0.06 268);
+
+  --color-surface: var(--color-white);
+  --color-canvas: var(--color-stone-50);
+  --color-line: var(--color-stone-200);
+
+  --color-ok: var(--color-accent);
+  --color-ok-soft: var(--color-accent-soft);
+  --color-busy: oklch(0.7 0.15 75);
+  --color-busy-soft: oklch(0.97 0.03 85);
+  --color-busy-ink: oklch(0.45 0.1 65);
+  --color-bad: oklch(0.55 0.2 27);
+  --color-bad-soft: oklch(0.97 0.02 20);
+  --color-bad-ink: oklch(0.45 0.16 27);
+
+  --animate-fade-in: fade-in 150ms ease-out;
+  --animate-slide-in-left: slide-in-left 200ms ease-out;
+  --animate-pop-in: pop-in 150ms ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes slide-in-left {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-canvas font-sans text-sm text-stone-800 antialiased;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      transition-duration: 1ms !important;
+    }
+  }
+}
+
+/* Rendered Markdown (src/ui/markdown.tsx): reading-sized type, quiet rules, code blocks with a copy button. */
+@layer components {
+  .guide-prose {
+    @apply text-[15px] leading-[1.8] break-words text-stone-800;
+  }
+  .guide-prose > * + * {
+    @apply mt-5;
+  }
+  .guide-prose h1 {
+    @apply mt-10 text-2xl leading-snug font-bold text-stone-900;
+  }
+  .guide-prose h2 {
+    @apply mt-10 border-b border-line pb-1.5 text-xl leading-snug font-bold text-stone-900;
+  }
+  .guide-prose h3 {
+    @apply mt-8 text-lg leading-snug font-semibold text-stone-900;
+  }
+  .guide-prose h4,
+  .guide-prose h5,
+  .guide-prose h6 {
+    @apply mt-6 font-semibold text-stone-900;
+  }
+  .guide-prose > :first-child {
+    @apply mt-0;
+  }
+  .guide-prose a {
+    @apply text-accent-strong underline decoration-accent-line underline-offset-2 hover:decoration-accent;
+  }
+  .guide-prose ul {
+    @apply list-disc pl-6;
+  }
+  .guide-prose ol {
+    @apply list-decimal pl-6;
+  }
+  .guide-prose li + li {
+    @apply mt-1;
+  }
+  .guide-prose li > ul,
+  .guide-prose li > ol {
+    @apply mt-1;
+  }
+  .guide-prose blockquote {
+    @apply border-l-4 border-stone-200 pl-4 text-stone-600;
+  }
+  .guide-prose code {
+    @apply rounded bg-stone-100 px-1 py-0.5 font-mono text-[0.875em] text-stone-800;
+  }
+  .guide-prose pre,
+  .code-block pre {
+    @apply overflow-x-auto rounded-lg bg-stone-900 px-4 py-3 font-mono text-[13px] leading-relaxed text-stone-100;
+  }
+  .code-block pre {
+    @apply pt-9;
+  }
+  .code-block {
+    @apply relative;
+  }
+  .code-block [data-copy-code] {
+    @apply absolute top-1.5 right-1.5 inline-flex h-7 items-center rounded-md border border-stone-600 bg-stone-800 px-2 font-sans text-xs font-medium text-stone-200 hover:bg-stone-700 hover:text-white;
+  }
+  .code-block [data-copy-code][data-copied] {
+    @apply border-accent-line text-white;
+  }
+  .code-block [data-code-lang] {
+    @apply pointer-events-none absolute top-2.5 left-4 font-mono text-[11px] text-stone-400 uppercase;
+  }
+  .guide-prose pre code {
+    @apply bg-transparent p-0 text-inherit;
+  }
+  .guide-prose hr {
+    @apply border-line;
+  }
+  .guide-prose img {
+    @apply max-w-full rounded-md;
+  }
+  .guide-prose table {
+    @apply block w-full overflow-x-auto border-collapse text-sm;
+  }
+  .guide-prose th,
+  .guide-prose td {
+    @apply border border-line px-3 py-1.5 text-left;
+  }
+  .guide-prose th {
+    @apply bg-stone-50 font-semibold;
+  }
+}

@@ -1,0 +1,16 @@
+# Agent Guide
+
+> Environment-bound guide, skills and llms.txt for operating this AppThrust Project with apth and apthctl.
+
+## Start here
+
+- [Start here](https://agent-guide.pj-test.example.test/md/start-here.md): Choose a track for this Project.
+
+## apth
+
+- [Install apth](https://agent-guide.pj-test.example.test/md/apth/install.md): Install the developer CLI.
+- [Log in](https://agent-guide.pj-test.example.test/md/apth/login.md): Select your Project.
+
+## Skills
+
+- [example](https://agent-guide.pj-test.example.test/skills/example/SKILL.md): Operate this Project.

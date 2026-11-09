@@ -1,0 +1,27 @@
+apiVersion: appthrust.io/v1alpha1
+kind: ApplicationStackDefinition
+metadata: { name: agent-guide }
+spec:
+  display: { title: Agent Guide, category: develop, iconRef: { name: terminal },
+             description: Environment-bound guide, skills and llms.txt that teach coding agents to operate this AppThrust Project with apth and apthctl. }
+  components:
+    - id: web
+      definitionRef: { name: web-service, version: v1 }
+      defaultValues: { port: 8080, minScale: 1, readinessProbePath: /readyz, livenessProbePath: /healthz, publicURLEnv: AGENT_GUIDE_PUBLIC_URL }
+  publish: { hostnameLabel: agent-guide }
+  access:
+    audiences: [appthrust-platform-api]
+    scopes: [openid, profile, email]
+    tokenClaims: [groups]
+    bearerPassThrough: true
+    accessKeys:
+      audience: agent-guide
+      audienceEnv: AGENT_GUIDE_ACCESS_AUDIENCE
+      keyPrefix: agg
+      scopes: [{ name: read, description: Read guide documents, skills and llms.txt }]
+      defaultConnectionScopes: [read]
+      defaultTTL: 720h0m0s
+      maxTTL: 8760h0m0s
+  releaseIdentityEnvPrefix: AGENT_GUIDE
+  updatePolicy: { default: follow, allowed: [follow, pinned] }
+  versions: [] # written by hack/publish-entry.ts on tag

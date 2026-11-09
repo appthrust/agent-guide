@@ -1,0 +1,77 @@
+locales:
+  en:
+    title: Agent Guide
+    tagline: Teach your coding agent to operate this AppThrust Project with apth and apthctl, using guides, skills and an llms.txt bound to this environment.
+    overview: |
+      Agent Guide gives coding agents such as Claude Code, Codex and OMP an entry point that knows where they are. Every page, command and skill is rendered with this installation's real Platform API URL and Project, so an agent never guesses the environment or copies a hostname from another estate.
+
+      The guide covers the developer path with apth (install, log in, create and publish apps, components and releases, databases, marketplace apps, access keys, bounded waits) and the operator path with apthctl (platform releases, debugging, authority and leases). Each document states its audience and lists the platform sources it was distilled from, pinned to a revision, so stale knowledge is visible instead of silent.
+
+      People read the documents as pages; agents read the same content as raw Markdown. The app serves an llms.txt index, llms-full.txt, a raw .md route for every document and a skills index whose skills install straight into an agent's skills directory.
+
+      Agent setup on the home page shows the apth login for this environment and builds the commands that create a read-only Access Key for an agent and exchange it for a short-lived assertion. The key secret is printed once by apth on the person's own machine; the app never receives or stores it. The interface is available in Japanese and English; documents are in English.
+  ja:
+    title: Agent Guide
+    tagline: この AppThrust Project を apth と apthctl で操作する方法を、環境に合わせたガイド、スキル、llms.txt でコーディングエージェントに伝えます。
+    overview: |
+      Agent Guide は、Claude Code、Codex、OMP などのコーディングエージェントに、自分がどの環境にいるのかを伝える入り口です。ページ、コマンド、スキルはすべて、このインストール先の実際の Platform API の URL と Project で埋め込まれて表示されます。エージェントが環境を推測したり、別の環境のホスト名を写したりすることはありません。
+
+      ガイドは、apth を使う開発者向けの手順（インストール、ログイン、アプリの作成と公開、コンポーネントとリリース、データベース、マーケットプレイスアプリ、Access Key、上限つきの待機）と、apthctl を使う運用者向けの手順（プラットフォームのリリース、デバッグ、権限とリース）を扱います。各ドキュメントには対象読者と、もとにしたプラットフォームのソースとそのリビジョンが記載されるため、情報が古くなっても気づけます。
+
+      人はドキュメントをページとして読み、エージェントは同じ内容を Markdown のまま読みます。llms.txt の索引、llms-full.txt、ドキュメントごとの .md、スキルの一覧を提供し、スキルはエージェントのスキル用ディレクトリにそのままインストールできます。
+
+      ホームの「エージェントの設定」には、この環境向けの apth ログインと、エージェント用の読み取り専用 Access Key を作って有効期間の短いアサーションに交換するコマンドが表示されます。キーのシークレットは利用者自身のマシンで apth が一度だけ出力し、アプリが受け取ったり保存したりすることはありません。画面は日本語と英語に対応し、ドキュメントは英語です。
+highlights:
+  - screenshot: home
+    locales:
+      en:
+        title: One starting point bound to this Project
+        body: The home page explains how agents work with this Project and lists every document by section, with a badge for developers, operators or both.
+      ja:
+        title: この Project 専用の入り口
+        body: ホームでは、エージェントがこの Project をどう扱うかを説明し、すべてのドキュメントを開発者、運用者、共通のバッジつきでセクションごとに並べます。
+  - screenshot: agent-setup
+    locales:
+      en:
+        title: Connect an agent in two steps
+        body: Copy the apth login for this environment, name a key, and get the commands that create a read-only Access Key and exchange it for a short-lived assertion. The secret never passes through the app.
+      ja:
+        title: 2 ステップでエージェントを接続
+        body: この環境向けの apth ログインをコピーし、キーに名前をつけると、読み取り専用の Access Key を作ってアサーションに交換するコマンドが表示されます。シークレットはアプリを通りません。
+  - screenshot: document
+    locales:
+      en:
+        title: Commands that already carry the right values
+        body: Every code block is ready to copy with this environment's URL and Project. Copy a whole document as Markdown or open its raw .md, and see the platform sources it came from.
+      ja:
+        title: 正しい値が入ったコマンド
+        body: コードブロックには、この環境の URL と Project が入っており、そのままコピーできます。ドキュメント全体を Markdown でコピーしたり .md を開いたりでき、出典も確認できます。
+  - screenshot: skills
+    locales:
+      en:
+        title: Skills and llms.txt for agents
+        body: Install environment-bound agent skills with one snippet each, and point agents at llms.txt for an index of every document as raw Markdown.
+      ja:
+        title: エージェント向けのスキルと llms.txt
+        body: 環境に合わせたエージェントスキルを、スニペットひとつでインストールできます。llms.txt からは、すべてのドキュメントを Markdown のまま読めます。
+screenshots:
+  - name: home
+    file: home.webp
+    alt:
+      en: The Agent Guide home page, with the document list grouped into Start here, apth and apthctl sections on the left and the Agent setup panel showing the signed-in user, the Project, the apps in it, the apth login command and the key label form.
+      ja: Agent Guide のホーム画面。左にセクションごとのドキュメント一覧、中央にサインイン中のユーザー、Project、アプリ、apth のログインコマンド、キーのラベル欄を含むエージェントの設定が表示されています。
+  - name: agent-setup
+    file: agent-setup.webp
+    alt:
+      en: The Agent setup panel after naming a key, with a warning that the secret is shown only once and a shell block that creates the Access Key, exchanges it and fetches llms.txt.
+      ja: キーに名前をつけたあとのエージェントの設定。シークレットは一度しか表示されないという注意と、Access Key の作成、交換、llms.txt の取得を行うシェルのコマンドが表示されています。
+  - name: document
+    file: document.webp
+    alt:
+      en: The Apps cookbook document for developers, with Copy as Markdown and Open raw .md buttons, tags, and apth command blocks that each have a Copy button.
+      ja: 開発者向けの Apps cookbook ドキュメント。Markdown をコピー、.md を開くのボタンとタグ、コピーボタンつきの apth コマンドが表示されています。
+  - name: skills
+    file: skills.webp
+    alt:
+      en: The Skills page listing two agent skills, each with its description, files, an Open SKILL.md button and an install snippet.
+      ja: スキルの画面。2 つのエージェントスキルが、説明、ファイル、SKILL.md を開くボタン、インストール用のスニペットとともに並んでいます。
