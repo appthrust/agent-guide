@@ -3,7 +3,7 @@ kind: ApplicationStackDefinition
 metadata: { name: agent-guide }
 spec:
   display: { title: Agent Guide, category: develop, iconRef: { name: terminal },
-             description: Environment-bound guide, skills and llms.txt that teach coding agents to operate this AppThrust Project with apth and apthctl. }
+             description: "Environment-bound guide, skills and llms.txt that teach coding agents to operate this AppThrust Project with apth and apthctl." }
   components:
     - id: web
       definitionRef: { name: web-service, version: v1 }
@@ -18,7 +18,7 @@ spec:
       audience: agent-guide
       audienceEnv: AGENT_GUIDE_ACCESS_AUDIENCE
       keyPrefix: agg
-      scopes: [{ name: read, description: Read guide documents, skills and llms.txt }]
+      scopes: [{ name: read, description: "Read guide documents, skills and llms.txt" }]
       defaultConnectionScopes: [read]
       defaultTTL: 720h0m0s
       maxTTL: 8760h0m0s
