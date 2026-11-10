@@ -15,6 +15,7 @@ sources:
   - { path: "skills/apthctl-kubernetes-debug/SKILL.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
   - { path: "docs/reference/cli/cluster.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
   - { path: "skills/apthctl-live-cluster-retention/SKILL.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
+  - { path: "vault:appthrust/cli/install.sh", revision: "cf7ae703425a682d97a84a204baf8a455014087b" }
 ---
 
 # AppThrust 運用者向け診断
@@ -22,6 +23,16 @@ sources:
 **必要な権限:** 運用者が承認したアイデンティティと正確なターゲット、PMC の読み取りには管理用 kubeconfig/context、テナント/メンバーの読み取りにはプロダクトが発行した Gateway アクセスが必要です。共有 PMC への書き込みには、さらに明示的なスコープと正規の PMC writer リースが必要です。**Agent Guide とそのアクセスキーは、これらのいずれも付与しません。** その権限なしに、Project のアプリタスクをインフラ修復に変えないでください。
 
 このガイドの Project は `{{.ProjectID}}`、Platform API は `{{.PlatformAPIURL}}` です。どちらの値も管理 context を特定するものではなく、クラスタへのアクセスを付与するものでもありません。
+
+## apthctl のインストール
+
+`apthctl` が未インストールなら、公開インストーラーを使ってください。認証やトークンは不要です。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/appthrust/cli/main/install.sh | sh -s -- apthctl
+```
+
+インストール先を `PATH` に追加してください。デフォルトは `~/.local/bin` で、`APTH_INSTALL_DIR` で変更できます。バージョンの指定、チェックサムの検証、`apthctl version` での確認、チャートのデフォルトが `dev` になる点については、[運用者向け概要]({{.PublicURL}}/md/apthctl/overview.md) を参照してください。バイナリのインストールは、上記の権限を付与するものではありません。
 
 ## 1. 読み取る前に境界を特定する
 

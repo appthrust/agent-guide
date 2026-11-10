@@ -12,6 +12,7 @@ sources:
   - { path: "AGENTS.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
   - { path: "skills/apthctl-kubernetes-debug/SKILL.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
   - { path: "docs/reference/cli/cluster.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
+  - { path: "vault:appthrust/cli/install.sh", revision: "cf7ae703425a682d97a84a204baf8a455014087b" }
 ---
 
 # 運用者向けトラックと権限境界
@@ -19,6 +20,28 @@ sources:
 **必要な権限：** 運用者として認可されたアイデンティティ、PMC の読み取りには正確な管理用 kubeconfig/コンテキスト、テナントの読み取りにはプロダクトが発行した Gateway kubeconfig が必要です。共有 PMC への書き込みには、さらにその環境の正規の PMC ライターリースと、対象を明示的に限定した変更権限が必要です。**Agent Guide はこれらのいずれも付与しません。** 読み取り専用のガイドキーは運用者の認証情報ではありません。
 
 `apth` は Public API を通じて Project リソースを操作します。`apthctl` はインフラストラクチャとリリースのライフサイクルを操作します。開発者向け API にリクエストを拒否されたという理由だけで、運用者向けツールに切り替えないでください。
+
+## インストール
+
+`appthrust/cli` の公開インストーラーを使ってください。認証やトークンは不要です。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/appthrust/cli/main/install.sh | sh -s -- apthctl
+```
+
+- バージョンを省略すると、最新の `apthctl` リリースが選ばれます。公開済みのバージョンを指定するには、ツール名の接頭辞を除いたタグを末尾に追加してください。たとえば `apthctl-v0.1.0` ではなく `v0.1.0` です。
+- Linux と macOS（`linux`/`darwin`）の `amd64`、`arm64` に対応しています。インストール前に、リリースの `SHA256SUMS` を使ってアーカイブのチェックサムを検証します。
+- インストール先のデフォルトは `~/.local/bin` です。変更する場合は、実行前に `APTH_INSTALL_DIR` を export してください。インストール先をシェルの `PATH` に追加する必要があります。
+
+インストールしたバイナリの `version`、`revision`、`commitDate` を確認してください。
+
+```bash
+apthctl version
+```
+
+`dev` ビルドでは、Helm チャートのデフォルトバージョンも `dev` です。リリース済みのチャートを使う場合は、チャートを選択するコマンドで `--chart-version <released>` を指定し、`<released>` を使用する公開済みのチャートバージョンに置き換えてください。
+
+バイナリをインストールしても、運用者としてのアイデンティティ、クラスタへのアクセス、PMC writer リース、変更権限は付与されません。上記の権限要件は引き続き適用されます。
 
 ## 観測点を選択する
 

@@ -15,6 +15,7 @@ sources:
   - { path: "skills/apthctl-kubernetes-debug/SKILL.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
   - { path: "docs/reference/cli/cluster.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
   - { path: "skills/apthctl-live-cluster-retention/SKILL.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
+  - { path: "vault:appthrust/cli/install.sh", revision: "cf7ae703425a682d97a84a204baf8a455014087b" }
 ---
 
 # AppThrust operator diagnostics
@@ -22,6 +23,16 @@ sources:
 **Authority required:** an operator-approved identity and exact target; management kubeconfig/context for PMC reads; product-issued Gateway access for tenant/member reads. Shared PMC writes additionally require explicit scope and the canonical PMC writer lease. **Agent Guide and its Access Key grant none of these.** Do not turn a Project app task into an infrastructure repair without that authority.
 
 This guide's Project is `{{.ProjectID}}` and its Platform API is `{{.PlatformAPIURL}}`. Neither value identifies a management context or grants cluster access.
+
+## Install apthctl
+
+If `apthctl` is not installed, use the public installer; it needs no authentication or token:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/appthrust/cli/main/install.sh | sh -s -- apthctl
+```
+
+Add the installation directory (default `~/.local/bin`, overridable with `APTH_INSTALL_DIR`) to `PATH`. Read [the operator overview]({{.PublicURL}}/md/apthctl/overview.md) for version selection, checksum verification, `apthctl version` readback, and the `dev` chart default. Installing the binary grants none of the authority required above.
 
 ## 1. Resolve the boundary before reading
 

@@ -12,6 +12,7 @@ sources:
   - { path: "AGENTS.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
   - { path: "skills/apthctl-kubernetes-debug/SKILL.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
   - { path: "docs/reference/cli/cluster.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
+  - { path: "vault:appthrust/cli/install.sh", revision: "cf7ae703425a682d97a84a204baf8a455014087b" }
 ---
 
 # Operator track and authority boundary
@@ -19,6 +20,28 @@ sources:
 **Required authority:** an operator-authorized identity, an exact management kubeconfig/context for PMC reads, or a product-issued Gateway kubeconfig for tenant reads. Shared PMC writes additionally require the environment's canonical PMC writer lease and explicit target-scoped mutation authority. **Agent Guide grants none of these.** A read-only guide key is not an operator credential.
 
 `apth` operates Project resources through the Public API. `apthctl` operates infrastructure and release lifecycle. Do not switch to the operator tool just because a developer API rejected a request.
+
+## Install
+
+Use the public installer from `appthrust/cli`. No authentication or token is needed:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/appthrust/cli/main/install.sh | sh -s -- apthctl
+```
+
+- Without a version argument, the installer selects the newest `apthctl` release. To select a published version, append the tag without its tool prefix: for example, `v0.1.0`, not `apthctl-v0.1.0`.
+- The installer supports Linux and macOS (`linux`/`darwin`) on `amd64` and `arm64`, and verifies the archive against the release's `SHA256SUMS` before installing.
+- The default destination is `~/.local/bin`. Export `APTH_INSTALL_DIR` before running the command to choose another directory, and add that directory to your shell's `PATH`.
+
+Read back the installed binary's `version`, `revision`, and `commitDate`:
+
+```bash
+apthctl version
+```
+
+A `dev` build defaults to Helm chart version `dev`. When a released chart is required, pass `--chart-version <released>` with the intended published chart version on commands that select a chart.
+
+Installing the binary grants no operator identity, cluster access, PMC writer lease, or mutation authority. The authority requirements above still apply.
 
 ## Choose the observation point
 

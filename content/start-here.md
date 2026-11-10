@@ -12,6 +12,7 @@ sources:
   - { path: "design/platform/marketplace-apps/README.md", revision: "1572ae7afa15df418cad36501f237b4595349428" }
   - { path: "apth-cli/internal/cmd/apth/accesskeys.go", revision: "1572ae7afa15df418cad36501f237b4595349428" }
   - { path: "sdk/access.go", revision: "1572ae7afa15df418cad36501f237b4595349428" }
+  - { path: "vault:appthrust/cli/install.sh", revision: "cf7ae703425a682d97a84a204baf8a455014087b" }
 ---
 
 # Start here
@@ -42,7 +43,10 @@ sources:
 
 ## Bootstrap
 
+Install `apth` with the public installer (no authentication or token needed), and add its installation directory to `PATH`: `~/.local/bin` by default, or the directory exported as `APTH_INSTALL_DIR`. As of 2026-11-10, no `apth` release has been published. If installation reports `no apth release found in appthrust/cli`, use the [source-build fallback]({{.PublicURL}}/md/apth/install.md) before continuing with login.
+
 ```bash
+curl -fsSL https://raw.githubusercontent.com/appthrust/cli/main/install.sh | sh -s -- apth
 apth login --api-url {{.PlatformAPIURL}} --project {{.ProjectID}}
 apth whoami
 apth skills install
