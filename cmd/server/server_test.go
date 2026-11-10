@@ -298,7 +298,7 @@ func TestContextForwardsBearerVerbatimWithoutSharingCallerState(t *testing.T) {
 			if bearer == first {
 				role = "Admin"
 			}
-			_ = json.NewEncoder(w).Encode(map[string]any{"member": true, "role": role})
+			_ = json.NewEncoder(w).Encode(map[string]any{"member": true, "roles": []string{role}, "actions": []string{}})
 		case "/api/v1/projects/pj-test/app-installations":
 			_, _ = w.Write([]byte(`{"data":[{"id":"agent-guide","display":{"name":"Agent Guide"},"version":"0.1.0","url":"https://guide.example.test","phase":"Ready"}],"meta":{"total":1}}`))
 		default:
@@ -341,7 +341,7 @@ func TestContextUpstreamFailuresAreUnavailable(t *testing.T) {
 						w.WriteHeader(500)
 						return
 					}
-					_, _ = w.Write([]byte(`{"member":true,"role":"Editor"}`))
+					_, _ = w.Write([]byte(`{"member":true,"roles":["Editor"],"actions":[]}`))
 				case "/api/v1/projects/pj-test/app-installations":
 					if failure == "installations" {
 						w.WriteHeader(500)
