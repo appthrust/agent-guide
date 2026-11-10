@@ -3,7 +3,7 @@ module github.com/appthrust/agent-guide
 go 1.26.0
 
 require (
-	github.com/appthrust/appserver-go v0.3.0
+	github.com/appthrust/appserver-go v0.5.1
 	github.com/stretchr/testify v1.11.1
 	gopkg.in/yaml.v3 v3.0.1
 )
