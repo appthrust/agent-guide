@@ -28,7 +28,7 @@ sources:
 7. An ApplicationStack declares a connected application graph.
 8. A Publish makes an application reachable through a managed endpoint.
 9. Marketplace installations use signed catalog definitions and ordinary application graphs.
-10. Use `apth` for Project work; `apthctl` is a separate operator tool requiring separate authority.
+10. Project work uses `apth` only: it needs the Platform API and a login, never a kubeconfig. `apthctl` is the operator tool and needs cluster credentials this guide does not grant.
 
 ## Operating rules
 
@@ -40,6 +40,7 @@ sources:
 - Prove the intended release and a real public interaction. Pod Ready, successful delivery, authentication, and product acceptance are different claims.
 - Use the smallest relevant check. Do not replace a failed observation with broad retries or larger timeouts.
 - This app grants neither cluster access nor a PMC writer lease.
+- Do not use a kubeconfig already on your machine for this Project. It likely points at another environment, and `apth` does not need one. See [what apth covers]({{.PublicURL}}/md/apth/scope.md).
 
 ## Bootstrap
 
@@ -77,9 +78,15 @@ Do not use verbose HTTP logging. Reuse the authenticated fetch pattern for:
 
 ## Choose the next path
 
+With `apth` only (no kubeconfig):
+
+- See what `apth` covers and where it stops: [apth scope]({{.PublicURL}}/md/apth/scope.md).
 - Build or update an app: [app development skill]({{.PublicURL}}/skills/appthrust-app-dev/SKILL.md).
 - Install a marketplace app: [marketplace cookbook]({{.PublicURL}}/md/apth/cookbook/marketplace-apps.md).
 - Explain a failed request or pending release: [troubleshooting]({{.PublicURL}}/md/apth/troubleshooting.md).
+
+Operators only (needs a kubeconfig issued for this environment; skip this for Project work):
+
 - Operate infrastructure with existing authority: [operator overview]({{.PublicURL}}/md/apthctl/overview.md).
 
 This content ships with Agent Guide `{{.ReleaseVersion}}`. Source revisions describe the authored contracts, not the current health of your environment.

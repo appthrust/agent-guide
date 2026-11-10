@@ -1,6 +1,6 @@
 # Agent Guide
 
-> apth と apthctl でこの AppThrust Project を操作するための、この環境に合わせたガイド、スキル、llms.txt です。
+> この AppThrust Project を操作するための、この環境に合わせたガイド、スキル、llms.txt です。Project の作業は apth だけで行えます。必要なのは Platform API とログインで、kubeconfig は不要です。apthctl のページは、この環境用に発行された kubeconfig を持つ運用者向けです。
 
 ## はじめに
 

@@ -28,7 +28,7 @@ sources:
 7. ApplicationStack は、接続されたアプリケーショングラフを宣言します。
 8. Publish は、マネージドなエンドポイントを通じてアプリケーションに到達できるようにします。
 9. Marketplace のインストールでは、署名済みのカタログ定義と通常のアプリケーショングラフを使用します。
-10. Project の作業には `apth` を使います。`apthctl` は別個の権限を必要とする、別の運用者向けツールです。
+10. Project の作業に使うのは `apth` だけです。必要なのは Platform API とログインで、kubeconfig は使いません。`apthctl` は運用者向けのツールで、このガイドが付与しないクラスタの認証情報が必要です。
 
 ## 運用ルール
 
@@ -40,6 +40,7 @@ sources:
 - 意図したリリースと、実際の公開されたインタラクションを証明してください。Pod の Ready、配送の成功、認証、プロダクトとしての受け入れは、それぞれ異なる主張です。
 - 関連する最小限のチェックを使用してください。失敗した観測を、広範なリトライやより長いタイムアウトで置き換えないでください。
 - このアプリは、クラスタへのアクセスも PMC の書き込みリースも付与しません。
+- 手元にすでにある kubeconfig を、この Project に使わないでください。別の環境を指している可能性が高く、`apth` には不要です。[apth にできること]({{.PublicURL}}/md/apth/scope.md) を参照してください。
 
 ## ブートストラップ
 
@@ -77,9 +78,15 @@ unset assertion
 
 ## 次の手順を選ぶ
 
+`apth` だけでできること（kubeconfig 不要）:
+
+- `apth` にできる範囲と境界を確認する: [apth の範囲]({{.PublicURL}}/md/apth/scope.md)
 - アプリを構築または更新する: [アプリ開発スキル]({{.PublicURL}}/skills/appthrust-app-dev/SKILL.md)
 - Marketplace アプリをインストールする: [Marketplace クックブック]({{.PublicURL}}/md/apth/cookbook/marketplace-apps.md)
 - 失敗したリクエストや保留中のリリースを説明する: [トラブルシューティング]({{.PublicURL}}/md/apth/troubleshooting.md)
+
+運用者のみ（この環境用に発行された kubeconfig が必要です。Project の作業では読み飛ばしてください）:
+
 - 既存の権限でインフラストラクチャを運用する: [運用者向け概要]({{.PublicURL}}/md/apthctl/overview.md)
 
 このコンテンツは Agent Guide `{{.ReleaseVersion}}` に同梱されています。ソースのリビジョンは作成された契約を示すものであり、お使いの環境の現在の健全性を示すものではありません。
