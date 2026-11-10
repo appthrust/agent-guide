@@ -26,7 +26,7 @@ curl -fsSL https://raw.githubusercontent.com/appthrust/cli/main/install.sh | sh 
 - The installer supports Linux and macOS (`linux`/`darwin`) on `amd64` and `arm64`, and verifies the archive against the release's `SHA256SUMS` before installing.
 - The default destination is `~/.local/bin`. Export `APTH_INSTALL_DIR` before running the command to choose another directory, and add that directory to your shell's `PATH`.
 
-As of 2026-11-10, no `apth` release has been published. If the installer reports `no apth release found in appthrust/cli`, no `apth` release is available yet; use the source build below as the fallback. It requires an authorized checkout of the platform repository and its Go toolchain:
+The first published release is `apth-v0.1.0`. If you cannot use the installer, build from source instead. It requires an authorized checkout of the platform repository and its Go toolchain:
 
 ```bash
 # Run from the platform repository root.

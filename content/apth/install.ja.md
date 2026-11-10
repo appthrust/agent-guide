@@ -26,7 +26,7 @@ curl -fsSL https://raw.githubusercontent.com/appthrust/cli/main/install.sh | sh 
 - Linux と macOS（`linux`/`darwin`）の `amd64`、`arm64` に対応しています。インストール前に、リリースの `SHA256SUMS` を使ってアーカイブのチェックサムを検証します。
 - インストール先のデフォルトは `~/.local/bin` です。変更する場合は、実行前に `APTH_INSTALL_DIR` を export してください。インストール先をシェルの `PATH` に追加する必要があります。
 
-2026-11-10 時点では、`apth` のリリースはまだ公開されていません。`no apth release found in appthrust/cli` と表示されたら、利用できる `apth` リリースがまだないため、代わりに以下の手順でソースからビルドしてください。プラットフォームリポジトリへのアクセス権、チェックアウト、Go ツールチェーンが必要です。
+最初の公開リリースは `apth-v0.1.0` です。インストーラーを使えない場合は、代わりに以下の手順でソースからビルドしてください。プラットフォームリポジトリへのアクセス権、チェックアウト、Go ツールチェーンが必要です。
 
 ```bash
 # Run from the platform repository root.

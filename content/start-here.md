@@ -43,7 +43,7 @@ sources:
 
 ## Bootstrap
 
-Install `apth` with the public installer (no authentication or token needed), and add its installation directory to `PATH`: `~/.local/bin` by default, or the directory exported as `APTH_INSTALL_DIR`. As of 2026-11-10, no `apth` release has been published. If installation reports `no apth release found in appthrust/cli`, use the [source-build fallback]({{.PublicURL}}/md/apth/install.md) before continuing with login.
+Install `apth` with the public installer (no authentication or token needed), and add its installation directory to `PATH`: `~/.local/bin` by default, or the directory exported as `APTH_INSTALL_DIR`.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/appthrust/cli/main/install.sh | sh -s -- apth

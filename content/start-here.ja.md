@@ -43,7 +43,7 @@ sources:
 
 ## ブートストラップ
 
-公開インストーラーで `apth` をインストールしてください。認証やトークンは不要です。インストール先を `PATH` に追加してください。デフォルトは `~/.local/bin` で、`APTH_INSTALL_DIR` に export したディレクトリに変更できます。2026-11-10 時点では、`apth` のリリースはまだ公開されていません。`no apth release found in appthrust/cli` と表示されたら、[ソースからビルド]({{.PublicURL}}/md/apth/install.md) してからログインに進んでください。
+公開インストーラーで `apth` をインストールしてください。認証やトークンは不要です。インストール先を `PATH` に追加してください。デフォルトは `~/.local/bin` で、`APTH_INSTALL_DIR` に export したディレクトリに変更できます。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/appthrust/cli/main/install.sh | sh -s -- apth
