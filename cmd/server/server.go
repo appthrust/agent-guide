@@ -105,30 +105,49 @@ func newHandler(staticDir, upstreamURL, projectID string, files fs.FS) (http.Han
 			handler(w, r)
 		}))
 	}
-	contentRoute("GET /llms.txt", func(w http.ResponseWriter, r *http.Request) { writeMarkdown(w, guide.Index) })
-	contentRoute("GET /llms-full.txt", func(w http.ResponseWriter, r *http.Request) { writeMarkdown(w, guide.Full) })
+	// Agent text routes are English unless `?lang=` asks otherwise; the SPA API
+	// also honours Accept-Language when no query is given.
+	textGuide := func(r *http.Request) *content.Guide {
+		lang, _ := content.ParseLang(r.URL.Query().Get("lang"))
+		return guide.Guide(lang)
+	}
+	apiGuide := func(w http.ResponseWriter, r *http.Request) *content.Guide {
+		w.Header().Add("Vary", "Accept-Language")
+		if query := r.URL.Query().Get("lang"); query != "" {
+			return textGuide(r)
+		}
+		return guide.Guide(content.NegotiateLang(r.Header.Get("Accept-Language")))
+	}
+	contentRoute("GET /llms.txt", func(w http.ResponseWriter, r *http.Request) {
+		g := textGuide(r)
+		writeMarkdown(w, g.Lang, g.Index)
+	})
+	contentRoute("GET /llms-full.txt", func(w http.ResponseWriter, r *http.Request) {
+		g := textGuide(r)
+		writeMarkdown(w, g.Lang, g.Full)
+	})
 	contentRoute("GET /md/{slug...}", func(w http.ResponseWriter, r *http.Request) {
 		slug, ok := strings.CutSuffix(r.PathValue("slug"), ".md")
-		document, found := guide.Documents[slug]
+		document, found := textGuide(r).Documents[slug]
 		if !ok || !found {
 			httpx.WriteError(w, httpx.NotFound(), "agent-guide")
 			return
 		}
-		writeMarkdown(w, document.Markdown)
+		writeMarkdown(w, document.Lang, document.Markdown)
 	})
-	skillIndex := func(w http.ResponseWriter, r *http.Request) {
-		httpx.WriteJSON(w, http.StatusOK, map[string]any{"skills": guide.Skills})
+	writeSkills := func(w http.ResponseWriter, g *content.Guide) {
+		httpx.WriteJSON(w, http.StatusOK, map[string]any{"lang": g.Lang, "skills": g.Skills})
 	}
-	contentRoute("GET /skills/index.json", skillIndex)
+	contentRoute("GET /skills/index.json", func(w http.ResponseWriter, r *http.Request) { writeSkills(w, textGuide(r)) })
 	contentRoute("GET /skills/{name}/{file...}", func(w http.ResponseWriter, r *http.Request) {
 		file := r.PathValue("file")
-		body, found := guide.SkillFiles[r.PathValue("name")+"/"+file]
+		body, found := textGuide(r).SkillFiles[r.PathValue("name")+"/"+file]
 		if !found {
 			httpx.WriteError(w, httpx.NotFound(), "agent-guide")
 			return
 		}
 		if strings.HasSuffix(file, ".md") {
-			writeMarkdown(w, body)
+			writeMarkdown(w, "", body)
 			return
 		}
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -136,17 +155,18 @@ func newHandler(staticDir, upstreamURL, projectID string, files fs.FS) (http.Han
 	})
 	contentRoute("GET "+apiBase+"/config", func(w http.ResponseWriter, r *http.Request) { httpx.WriteJSON(w, http.StatusOK, values) })
 	contentRoute("GET "+apiBase+"/docs", func(w http.ResponseWriter, r *http.Request) {
-		httpx.WriteJSON(w, http.StatusOK, map[string]any{"docs": guide.Docs})
+		g := apiGuide(w, r)
+		httpx.WriteJSON(w, http.StatusOK, map[string]any{"lang": g.Lang, "docs": g.Docs})
 	})
 	contentRoute("GET "+apiBase+"/docs/{slug...}", func(w http.ResponseWriter, r *http.Request) {
-		document, found := guide.Documents[r.PathValue("slug")]
+		document, found := apiGuide(w, r).Documents[r.PathValue("slug")]
 		if !found {
 			httpx.WriteError(w, httpx.NotFound(), "agent-guide")
 			return
 		}
 		httpx.WriteJSON(w, http.StatusOK, document.Detail())
 	})
-	contentRoute("GET "+apiBase+"/skills", skillIndex)
+	contentRoute("GET "+apiBase+"/skills", func(w http.ResponseWriter, r *http.Request) { writeSkills(w, apiGuide(w, r)) })
 	mux.HandleFunc("GET "+apiBase+"/context", protect(func(w http.ResponseWriter, r *http.Request, caller identity.Identity) {
 		result, err := api.ReadContext(r.Context(), caller, r.Header.Get("Authorization"), upstreamURL, projectID, authenticator.HTTPClient())
 		if err != nil {
@@ -162,8 +182,12 @@ func newHandler(staticDir, upstreamURL, projectID string, files fs.FS) (http.Han
 	return mux, nil
 }
 
-func writeMarkdown(w http.ResponseWriter, body string) {
+// writeMarkdown serves a text route; lang becomes Content-Language when the body's language is known.
+func writeMarkdown(w http.ResponseWriter, lang, body string) {
 	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
+	if lang != "" {
+		w.Header().Set("Content-Language", lang)
+	}
 	_, _ = w.Write([]byte(body))
 }
 

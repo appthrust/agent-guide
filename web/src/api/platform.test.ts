@@ -16,12 +16,15 @@ describe('agent key commands', () => {
   })
 
   test('the bootstrap creates without echoing, exchanges at the Platform API URL apth set, and reads llms.txt from this app', () => {
-    const script = agentBootstrapScript(mockConfig, agentKeyRequest('ci'))
+    const comments = { create: 'Create.', exchange: 'Exchange.', read: 'Read.' }
+    const script = agentBootstrapScript(mockConfig, agentKeyRequest('ci'), { comments, lang: 'en' })
+    expect(script.split('\n').filter((line) => line.startsWith('#'))).toEqual(['# 1. Create.', '# 2. Exchange.', '# 3. Read.'])
     expect(script).toContain(`eval "$(apth access-keys create --project ${mockConfig.projectId} --space agent-guide --scope read --label ci --env)"`)
     expect(script).toContain('apth access-keys exchange --access-url "$AGENT_GUIDE_ACCESS_URL" <<<"$AGENT_GUIDE_API_KEY"')
     expect(script).toContain(`curl -fsSL -H "Authorization: Bearer $AGENT_GUIDE_ASSERTION" ${mockConfig.publicUrl}/llms.txt`)
     expect(script).not.toContain(`${mockConfig.accessUrl}/llms.txt`)
     expect(script).not.toMatch(/agg_[A-Za-z0-9]/)
+    expect(agentBootstrapScript(mockConfig, agentKeyRequest('ci'), { comments, lang: 'ja' })).toEndWith(`'${mockConfig.publicUrl}/llms.txt?lang=ja'`)
   })
 })
 
@@ -37,7 +40,7 @@ describe('environment commands', () => {
   })
 
   test('a skill installs every listed file, creating nested directories first', () => {
-    const script = skillInstallScript(`${mockConfig.publicUrl}/`, mockSkills[0])
+    const script = skillInstallScript(`${mockConfig.publicUrl}/`, mockSkills[0], 'en')
     expect(script.split('\n')).toEqual([
       `src=${mockConfig.publicUrl}/skills/appthrust-app-dev`,
       'dir="${SKILLS_DIR:-$HOME/.claude/skills}/appthrust-app-dev"',
@@ -45,6 +48,13 @@ describe('environment commands', () => {
       'curl -fsSL -H "Authorization: Bearer $AGENT_GUIDE_ASSERTION" "$src/SKILL.md" -o "$dir/SKILL.md"',
       'curl -fsSL -H "Authorization: Bearer $AGENT_GUIDE_ASSERTION" "$src/references/troubleshooting.md" -o "$dir/references/troubleshooting.md"',
     ])
-    expect(llmsTxtCommand(mockConfig.publicUrl)).toEndWith(`${mockConfig.publicUrl}/llms.txt`)
+    expect(llmsTxtCommand(mockConfig.publicUrl, 'en')).toEndWith(`${mockConfig.publicUrl}/llms.txt`)
+  })
+
+  test('in Japanese, every fetch asks for the Japanese variant', () => {
+    const script = skillInstallScript(mockConfig.publicUrl, mockSkills[0], 'ja')
+    expect(script).toContain('"$src/SKILL.md?lang=ja" -o "$dir/SKILL.md"')
+    expect(script).toContain('"$src/references/troubleshooting.md?lang=ja" -o "$dir/references/troubleshooting.md"')
+    expect(llmsTxtCommand(mockConfig.publicUrl, 'ja')).toEndWith(`'${mockConfig.publicUrl}/llms.txt?lang=ja'`)
   })
 })

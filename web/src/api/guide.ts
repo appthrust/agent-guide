@@ -6,6 +6,13 @@
 
 export type Audience = 'developer' | 'operator' | 'both'
 
+/**
+ * A document language. English is the source; Japanese variants sit beside it
+ * and the server falls back to English when a variant is missing, so a
+ * response's `lang` can differ from the requested one.
+ */
+export type Lang = 'en' | 'ja'
+
 /** `GET /api/agent-guide/v1/config`: the installation's environment, rendered into every command the SPA shows. */
 export type GuideConfig = {
   projectId: string
@@ -26,6 +33,9 @@ export type DocSummary = {
   section: string
   order: number
   tags: string[]
+  /** The language served; English when the requested variant is missing. */
+  lang: Lang
+  availableLangs: Lang[]
 }
 
 /** A platform-repository file the document was distilled from, pinned to the commit it was read at. */
@@ -41,10 +51,12 @@ export type Doc = {
   tags: string[]
   sources: DocSource[]
   markdown: string
+  lang: Lang
+  availableLangs: Lang[]
 }
 
 /** `GET /api/agent-guide/v1/skills` (= `/skills/index.json`); `files` are relative to `/skills/<name>/`. */
-export type Skill = { name: string; description: string; files: string[] }
+export type Skill = { name: string; description: string; files: string[]; lang: Lang; availableLangs: Lang[] }
 
 export type ContextInstallation = { name: string; version: string; url: string; phase: string }
 
@@ -87,15 +99,19 @@ const REAUTH_AT_KEY = 'agent-guide:reauth-at'
 
 type Fetcher = (input: string, init: RequestInit) => Promise<Response>
 
+/**
+ * Content reads name their language explicitly (`?lang=`), so the server never
+ * falls back to the browser's Accept-Language for an English-locale reader.
+ */
 export interface GuideApi {
   config(): Promise<GuideConfig>
-  docs(): Promise<DocSummary[]>
+  docs(lang: Lang): Promise<DocSummary[]>
   /** 404 `not_found` for an unknown slug. */
-  doc(slug: string): Promise<Doc>
-  skills(): Promise<Skill[]>
+  doc(slug: string, lang: Lang): Promise<Doc>
+  skills(lang: Lang): Promise<Skill[]>
   context(): Promise<GuideContext>
-  /** The agent index exactly as an agent receives it. */
-  llmsTxt(): Promise<string>
+  /** The agent index exactly as an agent receives it with this `?lang=`. */
+  llmsTxt(lang: Lang): Promise<string>
 }
 
 /** Each segment escaped, the slashes kept: the server route is `{slug...}` (`apth/cookbook/apps`). */
@@ -133,11 +149,11 @@ export function createGuideApi(fetcher: Fetcher = (input, init) => fetch(input, 
 
   return {
     config: () => json<GuideConfig>('/config'),
-    docs: async () => (await json<{ docs: DocSummary[] }>('/docs')).docs,
-    doc: (slug) => json<Doc>(`/docs/${slugPath(slug)}`),
-    skills: async () => (await json<{ skills: Skill[] }>('/skills')).skills,
+    docs: async (lang) => (await json<{ docs: DocSummary[] }>(`/docs?lang=${lang}`)).docs,
+    doc: (slug, lang) => json<Doc>(`/docs/${slugPath(slug)}?lang=${lang}`),
+    skills: async (lang) => (await json<{ skills: Skill[] }>(`/skills?lang=${lang}`)).skills,
     context: () => json<GuideContext>('/context'),
-    llmsTxt: async () => (await send('/llms.txt', 'text/markdown, text/plain')).text(),
+    llmsTxt: async (lang) => (await send(`/llms.txt?lang=${lang}`, 'text/markdown, text/plain')).text(),
   }
 }
 
@@ -151,10 +167,15 @@ function browserReauth(): boolean {
 
 export const guideApi = createGuideApi()
 
-/** Server routes the SPA links to (opened as plain documents, not SPA pages). */
+/** The query that selects a Japanese variant on an agent text route; those routes are English without it. */
+export function langQuery(lang: Lang): string {
+  return lang === 'en' ? '' : `?lang=${lang}`
+}
+
+/** Server routes the SPA links to (opened as plain documents, not SPA pages), in the reader's language. */
 export const rawPaths = {
-  markdown: (slug: string) => `/md/${slugPath(slug)}.md`,
-  llmsTxt: '/llms.txt',
-  llmsFullTxt: '/llms-full.txt',
-  skillsIndex: '/skills/index.json',
+  markdown: (slug: string, lang: Lang) => `/md/${slugPath(slug)}.md${langQuery(lang)}`,
+  llmsTxt: (lang: Lang) => `/llms.txt${langQuery(lang)}`,
+  llmsFullTxt: (lang: Lang) => `/llms-full.txt${langQuery(lang)}`,
+  skillFile: (name: string, file: string, lang: Lang) => `/skills/${encodeURIComponent(name)}/${file.split('/').map(encodeURIComponent).join('/')}${langQuery(lang)}`,
 }

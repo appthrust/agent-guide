@@ -46,6 +46,11 @@ export function setLanguage(language: DashboardLanguage) {
   languageStore.setState((state) => (state.language === language ? state : { language }))
 }
 
+/** The display language outside React (the router's initial context). */
+export function currentLanguage(): DashboardLanguage {
+  return languageStore.state.language
+}
+
 export function useLanguage(): DashboardLanguage {
   return useSelector(languageStore, (state) => state.language)
 }

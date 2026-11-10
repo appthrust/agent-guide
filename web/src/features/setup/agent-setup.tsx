@@ -123,7 +123,7 @@ const LABEL_MAX = 100
 
 /** Label in, paste-once bootstrap out. Submitting never sends anything anywhere. */
 export function AgentKeyForm({ config }: { config: Pick<GuideConfig, 'projectId' | 'publicUrl'> }) {
-  const { t } = useText()
+  const { t, language } = useText()
   const inputId = useId()
   const [label, setLabel] = useState('')
   const [invalid, setInvalid] = useState(false)
@@ -151,7 +151,14 @@ export function AgentKeyForm({ config }: { config: Pick<GuideConfig, 'projectId'
         <h4 ref={resultHeading} tabIndex={-1} className="text-sm font-medium text-stone-800 focus:outline-none">
           {t('guide.setup.blockTitle')}
         </h4>
-        <CodeBlock code={agentBootstrapScript(config, agentKeyRequest(created))} language="bash" wrap />
+        <CodeBlock
+          code={agentBootstrapScript(config, agentKeyRequest(created), {
+            lang: language,
+            comments: { create: t('guide.setup.scriptCreate'), exchange: t('guide.setup.scriptExchange'), read: t('guide.setup.scriptRead') },
+          })}
+          language="bash"
+          wrap
+        />
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs text-stone-500">{t('guide.setup.whyCommand')}</p>
           <Button

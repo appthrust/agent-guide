@@ -1,8 +1,8 @@
 // All Agent Guide chrome wording, as dashboard-i18n catalogs: the English
 // source is the `defaultMessage`, Japanese (the default display language) is
 // `translations.ja`. Screens read it through `useText().t(id, values)`
-// (src/i18n.tsx); no screen hardcodes user-facing text. Documents themselves
-// are English and come from the server.
+// (src/i18n.tsx); no screen hardcodes user-facing text. Documents come from
+// the server in the display language (`?lang=`), English when untranslated.
 import type { DashboardMessageCatalog } from '@appthrust/platform-dashboard-i18n'
 import { commonMessages } from './common'
 import { guideMessages } from './guide'

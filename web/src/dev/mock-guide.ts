@@ -1,9 +1,11 @@
 // Dev-only Agent Guide contract (design.md "HTTP surface") over sample
 // content: three sections, seven documents and two skills, already rendered
-// with a fictional installation's values. No auth. `MOCK_CONTEXT=403|503`
-// makes `/api/agent-guide/v1/context` answer like an Access Key subject or a
+// with a fictional installation's values. Start here, the apps cookbook and
+// the app-dev skill have Japanese variants (`?lang=ja`); the rest falls back
+// to English like the server. No auth. `MOCK_CONTEXT=403|503` makes
+// `/api/agent-guide/v1/context` answer like an Access Key subject or a
 // failing Platform API.
-import type { Doc, DocSummary, GuideConfig, GuideContext, Skill } from '../api/guide'
+import type { Doc, DocSummary, GuideConfig, GuideContext, Lang, Skill } from '../api/guide'
 
 const PROJECT = 'pj-3f9a1c2d7e4b'
 const PLATFORM_API = 'https://dashboard.acme.example'
@@ -30,7 +32,8 @@ export const mockContext: GuideContext = {
 const REVISION = '1572ae7afa15df418cad36501f237b4595349428'
 const fence = '```'
 
-type MockDoc = Doc & { order: number }
+type MockDoc = Omit<Doc, 'lang' | 'availableLangs'> & { order: number }
+type Variant = Pick<Doc, 'title' | 'summary' | 'markdown'>
 
 const SECTION_ORDER: Record<string, number> = { 'start-here': 0, apth: 1, apthctl: 2 }
 
@@ -226,7 +229,66 @@ Read the first failing hop. Fix that hop, then run the same command again to con
   },
 ]
 
-const skills: Array<Skill & { contents: Record<string, string> }> = [
+const japanese: Record<string, Variant> = {
+  'start-here': {
+    title: 'はじめに',
+    summary: 'このガイドの範囲、結びついている環境、エージェントが最初に実行する 3 つのコマンドを説明します。',
+    markdown: `このガイドは、コーディングエージェントが \`apth\`（開発者）と \`apthctl\`（運用者）で AppThrust Project **${PROJECT}** を操作するためのものです。以下のコマンドには、この環境の値がすでに入っています。そのままコピーしてください。
+
+## この環境
+
+| 値 | |
+| --- | --- |
+| Platform API | \`${PLATFORM_API}\` |
+| Project | \`${PROJECT}\` |
+| ガイド | \`${PUBLIC_URL}\` |
+
+## 最初のコマンド
+
+${fence}bash
+apth login --api-url ${PLATFORM_API} --project ${PROJECT}
+apth whoami
+apth apps list --project ${PROJECT}
+${fence}
+
+## エージェントが守るルール
+
+- 生の HTTP より先に \`apth\` を使ってください。認証、冪等性、待機はコマンドが扱います。
+- トークンやアクセスキーのシークレットを出力したり、貼り付けたり、ログに残したりしないでください。
+- 待機には必ず上限を設けてください: \`--wait --timeout 5m\`。
+- 破壊的なコマンドには明示的な \`--yes\` が必要です。先に人に確認してください。
+- **Pod の Ready はプロダクトの Ready ではありません。** \`apth apps get\` が Ready を報告し、*かつ* 公開 URL が応答したときに完了です。
+
+## 次に読むもの
+
+1. エージェントを動かすマシンに [apth をインストール](/docs/apth/install) します。
+2. 作成、公開、ログ、削除は [アプリのクックブック](/docs/apth/cookbook/apps) を読んでください。
+3. 詰まったら [トラブルシューティング](/docs/apth/troubleshooting) を開いてください。
+`,
+  },
+  'apth/cookbook/apps': {
+    title: 'アプリのクックブック',
+    summary: '上限付きの待機で、アプリを作成、確認、設定、公開、削除します。',
+    markdown: `## テンプレートから作成する
+
+${fence}bash
+apth apps create my-game --template nextjs-postgres --publish --wait --timeout 10m --project ${PROJECT}
+${fence}
+
+このコマンドはソースリポジトリを作り、イメージをビルドし、スタックをデプロイして、\`*.${PROJECT}.acme.example\` の URL で公開します。
+
+## 削除する
+
+${fence}bash
+apth apps delete my-app --project ${PROJECT} --yes
+${fence}
+`,
+  },
+}
+
+type MockSkill = Omit<Skill, 'lang' | 'availableLangs'> & { contents: Record<string, string>; japanese?: { description: string; contents: Record<string, string> } }
+
+const skills: MockSkill[] = [
   {
     name: 'appthrust-app-dev',
     description: `Create, deploy, update and debug apps on the AppThrust Project ${PROJECT} with apth.`,
@@ -234,6 +296,12 @@ const skills: Array<Skill & { contents: Record<string, string> }> = [
     contents: {
       'SKILL.md': `---\nname: appthrust-app-dev\ndescription: Create, deploy, update and debug apps on the AppThrust Project ${PROJECT} with apth.\n---\n\n# AppThrust app development\n\nLog in with \`apth login --api-url ${PLATFORM_API} --project ${PROJECT}\`.\n`,
       'references/troubleshooting.md': '# Troubleshooting\n\nSee the not-Ready ladder.\n',
+    },
+    japanese: {
+      description: `apth で AppThrust Project ${PROJECT} のアプリを作成、デプロイ、更新、デバッグします。`,
+      contents: {
+        'SKILL.md': `---\nname: appthrust-app-dev\ndescription: apth で AppThrust Project ${PROJECT} のアプリを作成、デプロイ、更新、デバッグします。\n---\n\n# AppThrust アプリ開発\n\n\`apth login --api-url ${PLATFORM_API} --project ${PROJECT}\` でログインします。\n`,
+      },
     },
   },
   {
@@ -246,33 +314,52 @@ const skills: Array<Skill & { contents: Record<string, string> }> = [
   },
 ]
 
-const summaryOf = ({ slug, title, summary, audience, section, order, tags }: MockDoc): DocSummary => ({ slug, title, summary, audience, section, order, tags })
-const docOf = ({ order: _order, ...doc }: MockDoc): Doc => doc
+/** A document in `lang`, falling back to English like the server. */
+function docIn({ order: _order, ...doc }: MockDoc, lang: Lang): Doc {
+  const variant = japanese[doc.slug]
+  const availableLangs: Lang[] = variant ? ['en', 'ja'] : ['en']
+  return lang === 'ja' && variant ? { ...doc, ...variant, lang: 'ja', availableLangs } : { ...doc, lang: 'en', availableLangs }
+}
 
-/** Sorted like the server: (section order, order, title). */
-export const mockDocs: DocSummary[] = docs
-  .map(summaryOf)
-  .sort((a, b) => (SECTION_ORDER[a.section] ?? 99) - (SECTION_ORDER[b.section] ?? 99) || a.order - b.order || a.title.localeCompare(b.title))
+const summaryOf = (doc: MockDoc, lang: Lang): DocSummary => {
+  const { slug, title, summary, audience, section, tags, lang: served, availableLangs } = docIn(doc, lang)
+  return { slug, title, summary, audience, section, order: doc.order, tags, lang: served, availableLangs }
+}
 
-export const mockSkills: Skill[] = skills.map(({ name, description, files }) => ({ name, description, files }))
+/** Sorted like the server: (section order, order, English title); a translation keeps the English order. */
+const sortedDocs = [...docs].sort((a, b) => (SECTION_ORDER[a.section] ?? 99) - (SECTION_ORDER[b.section] ?? 99) || a.order - b.order || a.title.localeCompare(b.title))
 
-export function mockLlmsTxt(): string {
+export const mockDocsIn = (lang: Lang): DocSummary[] => sortedDocs.map((doc) => summaryOf(doc, lang))
+
+export const mockDocs: DocSummary[] = mockDocsIn('en')
+
+export const mockSkillsIn = (lang: Lang): Skill[] =>
+  skills.map(({ name, description, files, japanese: variant }) => {
+    const availableLangs: Lang[] = variant ? ['en', 'ja'] : ['en']
+    return lang === 'ja' && variant ? { name, description: variant.description, files, lang: 'ja', availableLangs } : { name, description, files, lang: 'en', availableLangs }
+  })
+
+export const mockSkills: Skill[] = mockSkillsIn('en')
+
+const langSuffix = (lang: Lang) => (lang === 'en' ? '' : `?lang=${lang}`)
+
+export function mockLlmsTxt(lang: Lang = 'en'): string {
   const lines = ['# Agent Guide', '', `> How to operate the AppThrust Project ${PROJECT} with apth and apthctl.`, '']
   let section = ''
-  for (const doc of mockDocs) {
+  for (const doc of mockDocsIn(lang)) {
     if (doc.section !== section) {
       if (section) lines.push('')
       section = doc.section
       lines.push(`## ${section}`, '')
     }
-    lines.push(`- [${doc.title}](${PUBLIC_URL}/md/${doc.slug}.md): ${doc.summary}`)
+    lines.push(`- [${doc.title}](${PUBLIC_URL}/md/${doc.slug}.md${langSuffix(doc.lang)}): ${doc.summary}`)
   }
-  lines.push('', '## Skills', '', ...mockSkills.map((skill) => `- [${skill.name}](${PUBLIC_URL}/skills/${skill.name}/SKILL.md): ${skill.description}`), '')
+  lines.push('', '## Skills', '', ...mockSkillsIn(lang).map((skill) => `- [${skill.name}](${PUBLIC_URL}/skills/${skill.name}/SKILL.md${langSuffix(skill.lang)}): ${skill.description}`), '')
   return lines.join('\n')
 }
 
-function mockLlmsFullTxt(): string {
-  return mockDocs.map((summary) => `# ${summary.title}\n\n${docs.find((doc) => doc.slug === summary.slug)?.markdown ?? ''}`).join('\n\n')
+function mockLlmsFullTxt(lang: Lang): string {
+  return sortedDocs.map((doc) => docIn(doc, lang)).map((doc) => `# ${doc.title}\n\n${doc.markdown}`).join('\n\n')
 }
 
 const notFound = (what: string) => Response.json({ error: 'not_found', message: `${what} not found` }, { status: 404 })
@@ -282,29 +369,31 @@ const markdown = (body: string) => new Response(body, { headers: { 'Content-Type
 export function guideRoutes(request: Request, url: URL, contextMode = process.env.MOCK_CONTEXT): Response | undefined {
   if (request.method !== 'GET') return undefined
   const path = decodeURIComponent(url.pathname)
+  const lang: Lang = url.searchParams.get('lang') === 'ja' ? 'ja' : 'en'
   const api = '/api/agent-guide/v1'
   if (path === '/config') return Response.json({ projectId: mockConfig.projectId, publicUrl: mockConfig.publicUrl })
   if (path === `${api}/config`) return Response.json(mockConfig)
-  if (path === `${api}/docs`) return Response.json({ docs: mockDocs })
+  if (path === `${api}/docs`) return Response.json({ lang, docs: mockDocsIn(lang) })
   if (path.startsWith(`${api}/docs/`)) {
     const doc = docs.find((candidate) => candidate.slug === path.slice(`${api}/docs/`.length))
-    return doc ? Response.json(docOf(doc)) : notFound('document')
+    return doc ? Response.json(docIn(doc, lang)) : notFound('document')
   }
-  if (path === `${api}/skills` || path === '/skills/index.json') return Response.json({ skills: mockSkills })
+  if (path === `${api}/skills` || path === '/skills/index.json') return Response.json({ lang, skills: mockSkillsIn(lang) })
   if (path === `${api}/context`) {
     if (contextMode === '403') return Response.json({ error: 'key_subject', message: 'context is only available to user sessions' }, { status: 403 })
     if (contextMode === '503') return Response.json({ error: 'platform_unavailable', message: 'Platform API did not answer' }, { status: 503 })
     return Response.json(mockContext)
   }
-  if (path === '/llms.txt') return markdown(mockLlmsTxt())
-  if (path === '/llms-full.txt') return markdown(mockLlmsFullTxt())
+  if (path === '/llms.txt') return markdown(mockLlmsTxt(lang))
+  if (path === '/llms-full.txt') return markdown(mockLlmsFullTxt(lang))
   if (path.startsWith('/md/') && path.endsWith('.md')) {
     const doc = docs.find((candidate) => candidate.slug === path.slice('/md/'.length, -'.md'.length))
-    return doc ? markdown(doc.markdown) : notFound('document')
+    return doc ? markdown(docIn(doc, lang).markdown) : notFound('document')
   }
   if (path.startsWith('/skills/')) {
     const [name, ...file] = path.slice('/skills/'.length).split('/')
-    const body = skills.find((skill) => skill.name === name)?.contents[file.join('/')]
+    const skill = skills.find((candidate) => candidate.name === name)
+    const body = (lang === 'ja' ? skill?.japanese?.contents[file.join('/')] : undefined) ?? skill?.contents[file.join('/')]
     return body === undefined ? notFound('skill file') : markdown(body)
   }
   return undefined

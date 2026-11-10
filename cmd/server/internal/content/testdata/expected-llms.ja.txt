@@ -1,0 +1,16 @@
+# Agent Guide
+
+> apth と apthctl でこの AppThrust Project を操作するための、この環境に合わせたガイド、スキル、llms.txt です。
+
+## はじめに
+
+- [はじめに](https://agent-guide.pj-test.example.test/md/start-here.md?lang=ja): この Project で進む道を選びます。
+
+## apth
+
+- [Install apth](https://agent-guide.pj-test.example.test/md/apth/install.md): Install the developer CLI.
+- [Log in](https://agent-guide.pj-test.example.test/md/apth/login.md): Select your Project.
+
+## スキル
+
+- [example](https://agent-guide.pj-test.example.test/skills/example/SKILL.md?lang=ja): この Project を操作します。

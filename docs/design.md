@@ -62,8 +62,8 @@ flowchart LR
 
 | Entity | Owner | Lifecycle | Invariants |
 | --- | --- | --- | --- |
-| `Document` | app repo (`content/`) | released with the image | `slug` = path without `content/` and `.md`; frontmatter `title`, `summary`, `audience: developer\|operator\|both`, `section`, `order`, `tags[]`, `sources[]{path,revision}`; body is Go `text/template` over `Values` |
-| `Skill` | app repo (`content/skills/<name>/`) | released with the image | directory with `SKILL.md` (+ optional `references/*`); `SKILL.md` frontmatter follows the agent-skill convention (`name`, `description`); rendered with the same `Values` |
+| `Document` | app repo (`content/`) | released with the image | `slug` = path without `content/` and `.md`; frontmatter `title`, `summary`, `audience: developer\|operator\|both`, `section`, `order`, `tags[]`, `sources[]{path,revision}`; body is Go `text/template` over `Values`. A Japanese variant `<slug>.ja.md` sits beside it: `title`/`summary`/body translated, every other key identical (validated at load); `.ja` is never part of the slug |
+| `Skill` | app repo (`content/skills/<name>/`) | released with the image | directory with `SKILL.md` (+ optional `references/*`); `SKILL.md` frontmatter follows the agent-skill convention (`name`, `description`); rendered with the same `Values`. Any file may have a `<file>.ja.md` variant (`SKILL.ja.md`: `description` translated, `name` unchanged) served under the original file name |
 | `Values` | server, from env | per process | `PlatformAPIURL` (env `PLATFORM_API_URL`), `ProjectID` (`PLATFORM_PROJECT_ID`), `PublicURL` (`AGENT_GUIDE_PUBLIC_URL`), `BaseDomain` (host of `PublicURL` with `agent-guide.<project>.` removed), `ReleaseVersion` (`AGENT_GUIDE_RELEASE_VERSION`), `AccessURL` (= `PlatformAPIURL`: the origin `apth access-keys exchange --access-url` POSTs `/api/v1/access/token` to, `sdk/access.go:259`; `apth access-keys create --env` emits it as `AGENT_GUIDE_ACCESS_URL`, `apth-cli/internal/cmd/apth/accesskeys.go:137-138`) |
 | `Context` | Platform API, read with the caller's bearer | per request | `me{login, role}`, `installations[]{name, version, url, phase}`; absent (403) for Access Key subjects |
 | Access Key space `agent-guide` | platform (definition `access.accessKeys`) | platform-owned | scope `read` only; `defaultTTL 720h`, `maxTTL 8760h`, `keyPrefix agg` |
@@ -135,17 +135,28 @@ spec:
 | `GET /releasez` | none | `releaseidentity.NewHandler("AGENT_GUIDE", …)` |
 | `GET /config` | none | `{ "projectId", "publicUrl" }` (memo convention) |
 | `GET /launcher` | bearer | `launcher.NewHandler` (memo convention) |
-| `GET /llms.txt` | bearer (user or key) | Markdown index: title, one-line purpose, then `- [title](<PublicURL>/md/<slug>.md): summary` grouped by section, and a `## Skills` list of `<PublicURL>/skills/<name>/SKILL.md` |
-| `GET /llms-full.txt` | bearer | every document, rendered, concatenated in `(section, order)` order with `# <title>` headers |
-| `GET /md/{slug...}.md` | bearer | rendered Markdown, `Content-Type: text/markdown; charset=utf-8` |
-| `GET /skills/index.json` | bearer | `{ "skills": [{ "name", "description", "files": ["SKILL.md", …] }] }` |
-| `GET /skills/{name}/{file...}` | bearer | rendered file; `SKILL.md` is `text/markdown` |
+| `GET /llms.txt` | bearer (user or key) | Markdown index: title, one-line purpose, then `- [title](<PublicURL>/md/<slug>.md): summary` grouped by section, and a `## Skills` list of `<PublicURL>/skills/<name>/SKILL.md`. `?lang=ja`: the Japanese index (translated lead, section titles, document titles/summaries, skill descriptions; links to translated documents and skills carry `?lang=ja`) |
+| `GET /llms-full.txt` | bearer | every document, rendered, concatenated in `(section, order)` order with `# <title>` headers; `?lang=ja` concatenates the Japanese variants |
+| `GET /md/{slug...}.md` | bearer | rendered Markdown, `Content-Type: text/markdown; charset=utf-8`, `Content-Language` = served language; `?lang=ja` serves the Japanese variant |
+| `GET /skills/index.json` | bearer | `{ "lang", "skills": [{ "name", "description", "files": ["SKILL.md", …], "lang", "availableLangs" }] }` (`files` never lists `.ja.md` variants); `?lang=ja` translates descriptions |
+| `GET /skills/{name}/{file...}` | bearer | rendered file; `SKILL.md` is `text/markdown`; `?lang=ja` serves `<file>.ja.md` when present |
 | `GET /api/agent-guide/v1/config` | bearer | `{ projectId, publicUrl, platformApiUrl, baseDomain, accessUrl, releaseVersion }` |
-| `GET /api/agent-guide/v1/docs` | bearer | `{ "docs": [{ slug, title, summary, audience, section, order, tags }] }` sorted `(section order, order, title)` |
-| `GET /api/agent-guide/v1/docs/{slug...}` | bearer | `{ slug, title, summary, audience, section, tags, sources, markdown }` (`markdown` already rendered; SPA renders to HTML with `marked` + `dompurify`) |
+| `GET /api/agent-guide/v1/docs` | bearer | `{ "lang", "docs": [{ slug, title, summary, audience, section, order, tags, lang, availableLangs }] }` sorted `(section order, order, English title)` in every language |
+| `GET /api/agent-guide/v1/docs/{slug...}` | bearer | `{ slug, title, summary, audience, section, tags, sources, markdown, lang, availableLangs }` (`markdown` already rendered; SPA renders to HTML with `marked` + `dompurify`) |
 | `GET /api/agent-guide/v1/skills` | bearer | same as `/skills/index.json` |
 | `GET /api/agent-guide/v1/context` | user bearer only | `{ me: { login, role }, installations: [{ name, version, url, phase }] }`; `403 key_subject` for Access Key assertions; `503 platform_unavailable` when Platform API fails |
 | `GET /` and SPA routes | edge cookie | SPA from `--static-dir` (default `/srv/agent-guide`), history fallback |
+
+Language (`lang`): content is English with a Japanese variant per document and
+skill file. `?lang=ja` (any `ja-*` tag) selects Japanese on every content route
+above; any other value selects English. Agent text routes (`/llms.txt`,
+`/llms-full.txt`, `/md/*`, `/skills/*`) are English without the query; the SPA
+API routes (`/api/agent-guide/v1/docs*`, `/skills`) fall back to
+`Accept-Language` when no query is given (`Vary: Accept-Language`). A missing
+variant falls back to English, so `lang` in a response is the language actually
+served and `availableLangs` lists the variants that exist. Inside a Japanese
+variant, links to `<PublicURL>/md/<slug>.md` and `<PublicURL>/skills/…` whose
+target has a variant gain `?lang=ja` at render time.
 
 Error envelope: `appserver/httpx` (`WriteError(w, err, "agent-guide")`).
 Authentication: `identity.New(identity.FromEnv("AGENT_GUIDE"))` exactly as
@@ -155,7 +166,8 @@ Authentication: `identity.New(identity.FromEnv("AGENT_GUIDE"))` exactly as
 verbatim; it never caches across subjects.
 
 Rendering: Go `text/template` with `Values`; delimiters `{{` `}}`; missing
-key is a startup error (content is validated at boot and in `go test`).
+key is a startup error (content is validated at boot and in `go test`, both
+languages).
 Markdown must stay valid after rendering (placeholders are URLs/identifiers
 only).
 
@@ -183,6 +195,7 @@ content/
   skills/appthrust-app-dev/SKILL.md    env-bound rewrite of apth-cli/skills/appthrust-app-dev
   skills/appthrust-marketplace-apps/SKILL.md
   skills/appthrust-operator-apthctl/SKILL.md
+  **/<name>.ja.md                      Japanese variant beside every file above (start-here.ja.md, skills/<name>/SKILL.ja.md, …)
 ```
 
 Frontmatter example:
@@ -204,9 +217,12 @@ Run `apth login --api-url {{.PlatformAPIURL}} --project {{.ProjectID}}` …
 Rules for content: `apth` first, never raw `curl` against the Platform API
 when a command exists; never print or paste tokens; every destructive command
 shows `--yes`; every wait shows `--wait --timeout`; environment values are
-placeholders, never literal estate hostnames or project IDs; Japanese and
-English copy for the SPA chrome only — documents are English (agents read
-English; the platform's docs are English).
+placeholders, never literal estate hostnames or project IDs. Documents are
+authored in English and every document and skill has a Japanese variant
+(`<name>.ja.md`): the SPA serves the display language's variant, agent text
+routes stay English by default and offer Japanese via `?lang=ja`. A variant
+translates prose only — placeholders, commands, code blocks, flags, URLs,
+resource names and condition reasons stay byte-identical.
 
 ### SPA (slice B owns `web/`)
 
@@ -214,7 +230,11 @@ Routes: `/` (Start here + Agent setup panel), `/docs/$slug` (document, with a
 "Copy as Markdown" and "Raw .md" link), `/skills` (list; each with install
 snippet), `/llms` (shows `llms.txt` with copy button). Left nav grouped by
 section with the audience badge. Shell: `@appthrust/app-launcher`, i18n ja/en
-for chrome via `@appthrust/platform-dashboard-i18n`.
+for chrome via `@appthrust/platform-dashboard-i18n`. Content follows the display
+language: every docs/skills/llms read sends `?lang=<display language>`, and
+raw links, skill install snippets and fetch commands carry `?lang=ja` in
+Japanese. A translated document offers a 「原文（English）を見る」 toggle to its
+English original; an untranslated one says the English original is shown.
 
 Agent setup panel: shows `apth login --api-url <platformApiUrl> --project
 <projectId>`; button "Create an Access Key for an agent" → `POST` Platform API

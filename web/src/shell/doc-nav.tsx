@@ -15,9 +15,9 @@ const DOC_ACTIVE = { className: 'bg-accent-soft text-accent-strong hover:bg-acce
 
 /** `query` is owned by the shell so it survives navigation between documents. */
 export function DocNav({ query, onQueryChange, className }: { query: string; onQueryChange: (query: string) => void; className?: string }) {
-  const { t } = useText()
+  const { t, language } = useText()
   const sectionLabel = useSectionLabel()
-  const { data: docs } = useSuspenseQuery(docsQuery)
+  const { data: docs } = useSuspenseQuery(docsQuery(language))
   const deferredQuery = useDeferredValue(query)
   const matches = filterDocs(docs, deferredQuery)
   const filtering = deferredQuery.trim() !== ''
@@ -63,7 +63,7 @@ export function DocNav({ query, onQueryChange, className }: { query: string; onQ
               {group.docs.map((doc) => (
                 <li key={doc.slug}>
                   <HrefLink href={paths.doc(doc.slug)} className={DOC_LINK} activeProps={DOC_ACTIVE} title={doc.summary}>
-                    <span lang="en" className="min-w-0 break-words">
+                    <span lang={doc.lang} className="min-w-0 break-words">
                       {doc.title}
                     </span>
                     <AudienceBadge audience={doc.audience} className="mt-0.5 shrink-0" />

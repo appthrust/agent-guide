@@ -13,14 +13,14 @@ export const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   // Start here is optional: the page renders its own fallback when the release has none.
-  loader: ({ context }) => context.queryClient.prefetchQuery(docQuery(START_HERE_SLUG)),
+  loader: ({ context }) => context.queryClient.prefetchQuery(docQuery(START_HERE_SLUG, context.language)),
   component: HomePage,
 })
 
 export const docRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/docs/$',
-  loader: ({ context, params }) => context.queryClient.ensureQueryData(docQuery(params._splat ?? '')).catch(notFoundOn404),
+  loader: ({ context, params }) => context.queryClient.ensureQueryData(docQuery(params._splat ?? '', context.language)).catch(notFoundOn404),
   component: function DocRoute() {
     const { _splat: slug = '' } = docRoute.useParams()
     return <DocPage key={slug} slug={slug} />
@@ -30,14 +30,14 @@ export const docRoute = createRoute({
 export const skillsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/skills',
-  loader: ({ context }) => context.queryClient.ensureQueryData(skillsQuery),
+  loader: ({ context }) => context.queryClient.ensureQueryData(skillsQuery(context.language)),
   component: SkillsPage,
 })
 
 export const llmsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/llms',
-  loader: ({ context }) => context.queryClient.ensureQueryData(llmsTxtQuery),
+  loader: ({ context }) => context.queryClient.ensureQueryData(llmsTxtQuery(context.language)),
   component: LlmsPage,
 })
 

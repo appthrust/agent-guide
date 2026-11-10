@@ -117,7 +117,7 @@ secrets; never paste real keys or assertions into docs, logs or screenshots.
 
 ## Content authoring
 
-Documents are English Markdown under `content/`, with this frontmatter:
+Documents are Markdown under `content/`, written in English, with this frontmatter:
 
 ```yaml
 ---
@@ -147,6 +147,18 @@ custom hostnames remain unchanged. Rendered documents omit frontmatter. Skills
 live in `content/skills/<name>/SKILL.md`, require matching `name` and `description`
 frontmatter, and may carry provenance plus `references/*`. Skill downloads retain
 frontmatter and use the same renderer.
+
+Every document and every skill's `SKILL.md` has a Japanese variant beside it, `<name>.ja.md`
+(`content/start-here.ja.md`, `content/skills/<name>/SKILL.ja.md`). A variant
+translates `title`, `summary` and `description` and the prose; it keeps
+`audience`, `section`, `order`, `tags` and `sources` identical (content validation
+fails otherwise), keeps skill `name`, and never changes placeholders, commands, code
+blocks, flags, URLs or condition names. The slug comes from the English path.
+`?lang=ja` selects the variant on every content route (English when a variant
+is missing); the agent text routes stay English without it, and the SPA API also
+honours `Accept-Language`. In a variant, links to other guide documents and
+skill files that have a variant gain `?lang=ja` at render time. Responses carry
+`lang` (served) and `availableLangs`.
 
 Use `apth` commands where available, explicit `--yes` on destructive operations,
 and `--wait --timeout` on waits. Never hardcode estate hosts, Project IDs or

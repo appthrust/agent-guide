@@ -1,7 +1,7 @@
 // Shell commands the SPA shows for copy and paste. Every environment value
 // comes from `GET /api/agent-guide/v1/config`, never from a literal, so the
 // same build is correct on every estate.
-import type { GuideConfig, Skill } from '../api/guide'
+import { langQuery, type GuideConfig, type Lang, type Skill } from '../api/guide'
 
 const SAFE_WORD = /^[A-Za-z0-9_@%+=:,./-]+$/
 
@@ -29,19 +29,20 @@ function curlWithAssertion(url: string, output?: string): string {
 
 /**
  * Installs one skill into `$SKILLS_DIR` (default: Claude Code's
- * `~/.claude/skills`), fetching every file the skills index lists.
+ * `~/.claude/skills`), fetching every file the skills index lists in `lang`
+ * (files without a variant arrive in English).
  */
-export function skillInstallScript(publicUrl: string, skill: Skill): string {
+export function skillInstallScript(publicUrl: string, skill: Skill, lang: Lang): string {
   const subdirs = [...new Set(skill.files.filter((file) => file.includes('/')).map((file) => file.slice(0, file.lastIndexOf('/'))))].sort()
   return [
     `src=${shellQuote(`${trimSlash(publicUrl)}/skills/${encodeURIComponent(skill.name)}`)}`,
     `dir="\${SKILLS_DIR:-$HOME/.claude/skills}/${skill.name}"`,
     `mkdir -p ${['"$dir"', ...subdirs.map((subdir) => `"$dir/${subdir}"`)].join(' ')}`,
-    ...skill.files.map((file) => curlWithAssertion(`"$src/${file.split('/').map(encodeURIComponent).join('/')}"`, `"$dir/${file}"`)),
+    ...skill.files.map((file) => curlWithAssertion(`"$src/${file.split('/').map(encodeURIComponent).join('/')}${langQuery(lang)}"`, `"$dir/${file}"`)),
   ].join('\n')
 }
 
-/** Fetches the agent index (`/llms.txt`) from the app's public URL with the assertion. */
-export function llmsTxtCommand(publicUrl: string): string {
-  return curlWithAssertion(shellQuote(`${trimSlash(publicUrl)}/llms.txt`))
+/** Fetches the agent index (`/llms.txt`) in `lang` from the app's public URL with the assertion. */
+export function llmsTxtCommand(publicUrl: string, lang: Lang): string {
+  return curlWithAssertion(shellQuote(`${trimSlash(publicUrl)}/llms.txt${langQuery(lang)}`))
 }

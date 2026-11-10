@@ -2,14 +2,15 @@ import { useQueryErrorResetBoundary, type QueryClient } from '@tanstack/react-qu
 import { createRootRouteWithContext, notFound, Outlet, useRouter, type ErrorComponentProps } from '@tanstack/react-router'
 import { FileQuestion } from 'lucide-react'
 import { useEffect } from 'react'
-import { isGuideError } from '../api/guide'
+import { isGuideError, type Lang } from '../api/guide'
 import { configQuery, docsQuery } from '../api/queries'
 import { useText } from '../i18n'
 import { Shell } from '../shell/shell'
 import { EmptyState, LinkButton, Loading, LoadFailed, useDocumentTitle } from '../ui'
 import { paths } from './paths'
 
-export type RouterContext = { queryClient: QueryClient }
+/** `language` is the display language; loaders read content in it. */
+export type RouterContext = { queryClient: QueryClient; language: Lang }
 
 /** Loader helper: an unknown document renders the not-found page instead of an error. */
 export function notFoundOn404(error: unknown): never {
@@ -75,7 +76,7 @@ function RootPending() {
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
   // The shell's navigation and every command need the environment and the document list.
-  beforeLoad: ({ context }) => Promise.all([context.queryClient.ensureQueryData(configQuery), context.queryClient.ensureQueryData(docsQuery)]),
+  beforeLoad: ({ context }) => Promise.all([context.queryClient.ensureQueryData(configQuery), context.queryClient.ensureQueryData(docsQuery(context.language))]),
   component: () => (
     <Shell>
       <Outlet />

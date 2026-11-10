@@ -11,9 +11,9 @@ describe('mock Agent Guide server', () => {
     const { docs } = (await get('/api/agent-guide/v1/docs')?.json()) as { docs: typeof mockDocs }
     expect(new Set(docs.map((doc) => doc.section)).size).toBe(3)
     expect(docs.length).toBeGreaterThanOrEqual(6)
-    for (const doc of docs) expect(Object.keys(doc).sort()).toEqual(['audience', 'order', 'section', 'slug', 'summary', 'tags', 'title'])
+    for (const doc of docs) expect(Object.keys(doc).sort()).toEqual(['audience', 'availableLangs', 'lang', 'order', 'section', 'slug', 'summary', 'tags', 'title'])
     const detail = (await get('/api/agent-guide/v1/docs/apthctl/debug')?.json()) as Record<string, unknown>
-    expect(Object.keys(detail).sort()).toEqual(['audience', 'markdown', 'section', 'slug', 'sources', 'summary', 'tags', 'title'])
+    expect(Object.keys(detail).sort()).toEqual(['audience', 'availableLangs', 'lang', 'markdown', 'section', 'slug', 'sources', 'summary', 'tags', 'title'])
     const skills = (await get('/skills/index.json')?.json()) as { skills: unknown[] }
     expect(skills).toEqual((await get('/api/agent-guide/v1/skills')?.json()) as { skills: unknown[] })
     expect(skills.skills).toHaveLength(2)
@@ -26,6 +26,9 @@ describe('mock Agent Guide server', () => {
     const text = (await llms?.text()) ?? ''
     expect(text).toContain('## Skills')
     for (const [, href] of text.matchAll(/\]\((https:[^)]+)\)/g)) expect(get(new URL(href).pathname)?.status).toBe(200)
+    const japanese = (await get('/llms.txt?lang=ja')?.text()) ?? ''
+    for (const [, href] of japanese.matchAll(/\]\((https:[^)]+)\)/g)) expect(get(`${new URL(href).pathname}${new URL(href).search}`)?.status).toBe(200)
+    expect(await get('/md/start-here.md?lang=ja')?.text()).toContain('## この環境')
     expect(await get('/md/apth/install.md')?.text()).toContain('apth --version')
     expect((await get('/llms-full.txt')?.text())?.startsWith('# Start here')).toBe(true)
   })

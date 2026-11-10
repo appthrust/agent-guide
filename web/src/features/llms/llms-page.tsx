@@ -8,9 +8,9 @@ import { buttonClasses, CodeBlock, PageHeader, Section, useDocumentTitle } from 
 
 /** `/llms`: the agent index exactly as an agent receives it, and the command that fetches it. */
 export function LlmsPage() {
-  const { t } = useText()
+  const { t, language } = useText()
   useDocumentTitle('llms.txt')
-  const { data: text } = useSuspenseQuery(llmsTxtQuery)
+  const { data: text } = useSuspenseQuery(llmsTxtQuery(language))
   const { data: config } = useSuspenseQuery(configQuery)
   return (
     <div className="max-w-4xl">
@@ -19,16 +19,16 @@ export function LlmsPage() {
         lead={t('guide.llms.lead')}
         actions={
           <>
-            <RawLink href={rawPaths.llmsTxt} label={t('guide.llms.open')} />
-            <RawLink href={rawPaths.llmsFullTxt} label={t('guide.llms.openFull')} />
+            <RawLink href={rawPaths.llmsTxt(language)} label={t('guide.llms.open')} />
+            <RawLink href={rawPaths.llmsFullTxt(language)} label={t('guide.llms.openFull')} />
           </>
         }
       />
       <Section title={t('guide.llms.fetchTitle')}>
-        <CodeBlock code={llmsTxtCommand(config.publicUrl)} language="bash" />
+        <CodeBlock code={llmsTxtCommand(config.publicUrl, language)} language="bash" />
       </Section>
       <Section title={t('guide.llms.contentTitle')}>
-        <div lang="en">
+        <div lang={language}>
           <CodeBlock code={text} language="markdown" wrap />
         </div>
       </Section>

@@ -32,12 +32,12 @@ afterAll(() => {
 async function renderRoute(path: string, language: 'ja' | 'en', { context = true }: { context?: boolean } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
   client.setQueryData(configQuery.queryKey, await api.config())
-  client.setQueryData(docsQuery.queryKey, await api.docs())
-  client.setQueryData(docQuery(START_HERE_SLUG).queryKey, await api.doc(START_HERE_SLUG))
-  client.setQueryData(skillsQuery.queryKey, await api.skills())
-  client.setQueryData(llmsTxtQuery.queryKey, await api.llmsTxt())
+  client.setQueryData(docsQuery(language).queryKey, await api.docs(language))
+  client.setQueryData(docQuery(START_HERE_SLUG, language).queryKey, await api.doc(START_HERE_SLUG, language))
+  client.setQueryData(skillsQuery(language).queryKey, await api.skills(language))
+  client.setQueryData(llmsTxtQuery(language).queryKey, await api.llmsTxt(language))
   if (context) client.setQueryData(contextQuery.queryKey, await api.context())
-  const router = createRouter({ routeTree, context: { queryClient: client }, history: createMemoryHistory({ initialEntries: [path] }) })
+  const router = createRouter({ routeTree, context: { queryClient: client, language }, history: createMemoryHistory({ initialEntries: [path] }) })
   await router.load()
   const html = renderToString(
     <QueryClientProvider client={client}>
@@ -88,6 +88,43 @@ describe('Agent Guide screens with mock API data', () => {
     expect(html).toContain('apth-cli/skills/appthrust-app-dev/SKILL.md')
     expect(html).toContain('@1572ae7afa15')
     expect(html).toContain('aria-current="page"')
+  })
+
+  test('document in Japanese: the translation with a toggle to the English original', async () => {
+    const html = await renderRoute('/docs/apth/cookbook/apps', 'ja')
+    expect(html).toContain('<h1 lang="ja"')
+    expect(html).toContain('>アプリのクックブック</h1>')
+    expect(html).toContain('テンプレートから作成する')
+    expect(html).toContain('aria-pressed="false"')
+    expect(html).toContain('原文（English）を見る')
+    expect(html).toContain('href="/md/apth/cookbook/apps.md?lang=ja"')
+    expect(html).not.toContain('Apps cookbook')
+  })
+
+  test('document in Japanese without a translation: the English original, said so, and no toggle', async () => {
+    const html = await renderRoute('/docs/apthctl/debug', 'ja')
+    expect(html).toContain('>Debug with apthctl</h1>')
+    expect(html).toContain('<div lang="en"><div class="guide-prose">')
+    expect(html).toContain('まだ日本語に翻訳されていないため')
+    expect(html).not.toContain('原文（English）を見る')
+    expect(html).toContain('href="/md/apthctl/debug.md"')
+  })
+
+  test('English locale: no toggle and no translation notes', async () => {
+    const html = await renderRoute('/docs/apth/cookbook/apps', 'en')
+    expect(html).not.toContain('aria-pressed')
+    expect(html).not.toContain('View the original')
+    expect(html).not.toContain('no translation yet')
+  })
+
+  test('Japanese skills and llms pages read and fetch the Japanese variants', async () => {
+    const skills = await renderRoute('/skills', 'ja')
+    expect(skills).toContain('<p lang="ja" class="mt-1 max-w-prose text-sm text-stone-600">apth で AppThrust Project')
+    expect(skills).toContain('href="/skills/appthrust-app-dev/SKILL.md?lang=ja"')
+    expect(skills).toContain('&quot;$src/SKILL.md?lang=ja&quot;')
+    const llms = await renderRoute('/llms', 'ja')
+    expect(llms).toContain('href="/llms.txt?lang=ja"')
+    expect(llms).toContain(`${mockConfig.publicUrl}/md/start-here.md?lang=ja`)
   })
 
   test('an unknown document renders the not-found page', async () => {

@@ -10,9 +10,11 @@ export const guideMessages = defineDashboardMessages({
     defaultMessage: 'This release has no Start here document. Pick a document from the list.',
     translations: { ja: 'このリリースには「はじめに」のドキュメントがありません。一覧からドキュメントを選んでください。' },
   },
-  'guide.doc.englishNote': {
-    defaultMessage: 'Documents are in English, the language agents read.',
-    translations: { ja: 'ドキュメントは、エージェントが読む英語で書かれています。' },
+  'guide.doc.showOriginal': { defaultMessage: 'View the original (English)', translations: { ja: '原文（English）を見る' } },
+  'guide.doc.showTranslation': { defaultMessage: 'Back to the translation', translations: { ja: '日本語訳に戻る' } },
+  'guide.doc.untranslated': {
+    defaultMessage: 'This document has no translation yet, so the English original is shown.',
+    translations: { ja: 'このドキュメントはまだ日本語に翻訳されていないため、原文（English）を表示しています。' },
   },
   'guide.doc.copyMarkdown': { defaultMessage: 'Copy as Markdown', translations: { ja: 'Markdown をコピー' } },
   'guide.doc.raw': { defaultMessage: 'Open raw .md', translations: { ja: '.md をそのまま開く' } },
@@ -36,7 +38,7 @@ export const guideMessages = defineDashboardMessages({
   'guide.llms.lead': {
     defaultMessage: 'The index an agent reads first: every document as a raw Markdown link grouped by section, then the skills. Agents fetch it with an Access Key assertion.',
     translations: {
-      ja: 'エージェントが最初に読む索引です。すべてのドキュメントがセクションごとに Markdown へのリンクとして並び、最後にスキルが続きます。エージェントは Access Key のアサーションで取得します。',
+      ja: 'エージェントが最初に読む索引です。すべてのドキュメントがセクションごとに Markdown へのリンクとして並び、最後にスキルが続きます。エージェントはアクセスキーのアサーションで取得します。',
     },
   },
   'guide.llms.open': { defaultMessage: 'Open llms.txt', translations: { ja: 'llms.txt を開く' } },

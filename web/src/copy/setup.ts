@@ -21,7 +21,7 @@ export const setupMessages = defineDashboardMessages({
   'guide.setup.keyTitle': { defaultMessage: 'Give the agent read access to this guide', translations: { ja: 'このガイドを読む権限をエージェントに渡す' } },
   'guide.setup.keyBody': {
     defaultMessage: 'Creates a read-only Access Key in the agent-guide space with your own apth login, then exchanges it for a short-lived assertion.',
-    translations: { ja: 'あなたの apth ログインで、agent-guide スペースに読み取り専用の Access Key を作り、有効期間の短いアサーションに交換します。' },
+    translations: { ja: 'あなたの apth ログインで、agent-guide スペースに読み取り専用のアクセスキーを作り、有効期間の短いアサーションに交換します。' },
   },
   'guide.setup.labelField': { defaultMessage: 'Key label', translations: { ja: 'キーのラベル' } },
   'guide.setup.labelHint': {
@@ -40,6 +40,12 @@ export const setupMessages = defineDashboardMessages({
       ja: 'シークレットは apth が一度だけ出力し、このページが受け取ったり保存したりすることはありません。キーやアサーションをチャット、Issue、ログに貼らないでください。漏れた場合は apth access-keys revoke でキーを失効させてください。',
     },
   },
+  'guide.setup.scriptCreate': {
+    defaultMessage: 'Create the key; eval keeps the one-time secret off the screen.',
+    translations: { ja: 'キーを作成します。eval で受けるので、一度だけのシークレットは画面に出ません。' },
+  },
+  'guide.setup.scriptExchange': { defaultMessage: 'Exchange it for a short-lived assertion.', translations: { ja: '有効期間の短いアサーションに交換します。' } },
+  'guide.setup.scriptRead': { defaultMessage: 'Read the guide index with it.', translations: { ja: 'そのアサーションでガイドの索引を読みます。' } },
   'guide.setup.whyCommand': {
     defaultMessage: 'Why a command instead of a button? Your session token stays with the sign-in edge, so this page cannot call the Platform API for you.',
     translations: { ja: 'ボタンではなくコマンドなのは、セッションのトークンがサインインのエッジにとどまり、このページからは Platform API を呼べないためです。' },

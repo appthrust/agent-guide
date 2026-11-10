@@ -24,10 +24,11 @@ window.addEventListener('vite:preloadError', (event) => {
 function LocalizedRouter() {
   const language = useLanguage()
   // TanStack Router memoizes route matches; remount on a language change so
-  // every page reads fresh copy. The router (URL) and query cache survive.
+  // every page reads fresh copy, and hand loaders the language so they read
+  // that language's documents. The router (URL) and query cache survive.
   return (
     <I18nProvider language={language}>
-      <RouterProvider key={language} router={router} />
+      <RouterProvider key={language} router={router} context={{ language }} />
     </I18nProvider>
   )
 }

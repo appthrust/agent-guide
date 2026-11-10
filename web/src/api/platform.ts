@@ -13,7 +13,7 @@
 // `access-keys create`), which the person runs with their own `apth login`.
 // The secret is then printed by apth exactly once, in their terminal; this app
 // never sees, stores or logs it.
-import type { GuideConfig } from './guide'
+import type { GuideConfig, Lang } from './guide'
 import { ASSERTION_ENV, llmsTxtCommand, shellQuote } from '../model/commands'
 
 /** The fields of the Platform API `AccessKeyCreateRequest` the panel sets. */
@@ -40,20 +40,27 @@ export function accessKeyCreateCommand(projectId: string, request: AgentKeyReque
   ].join(' ')
 }
 
+/** The bootstrap's step comments, in the display language. */
+export type BootstrapComments = { create: string; exchange: string; read: string }
+
 /**
  * The paste-once bootstrap: create the key without echoing it, exchange it for
  * a short-lived assertion at the Platform API (`AGENT_GUIDE_ACCESS_URL`, which
  * apth sets to the same value as config `accessUrl`), and read this guide's
- * `llms.txt` from the app's public URL with that assertion.
+ * `llms.txt` in `lang` from the app's public URL with that assertion.
  */
-export function agentBootstrapScript(config: Pick<GuideConfig, 'projectId' | 'publicUrl'>, request: AgentKeyRequest): string {
+export function agentBootstrapScript(
+  config: Pick<GuideConfig, 'projectId' | 'publicUrl'>,
+  request: AgentKeyRequest,
+  { comments, lang }: { comments: BootstrapComments; lang: Lang }
+): string {
   return [
-    '# 1. Create the key; eval keeps the one-time secret off the screen.',
+    `# 1. ${comments.create}`,
     `eval "$(${accessKeyCreateCommand(config.projectId, request)})"`,
     'export AGENT_GUIDE_API_KEY AGENT_GUIDE_ACCESS_URL',
-    '# 2. Exchange it for a short-lived assertion.',
+    `# 2. ${comments.exchange}`,
     `export ${ASSERTION_ENV}="$(apth access-keys exchange --access-url "$AGENT_GUIDE_ACCESS_URL" <<<"$AGENT_GUIDE_API_KEY")"`,
-    '# 3. Read the guide index with it.',
-    llmsTxtCommand(config.publicUrl),
+    `# 3. ${comments.read}`,
+    llmsTxtCommand(config.publicUrl, lang),
   ].join('\n')
 }

@@ -13,6 +13,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/appthrust/agent-guide/cmd/server/internal/content"
+	"github.com/appthrust/agent-guide/cmd/server/internal/render"
+	guidecontent "github.com/appthrust/agent-guide/content"
 	"github.com/appthrust/appserver-go/accesskey"
 	"github.com/stretchr/testify/require"
 )
@@ -99,12 +102,102 @@ func TestRenderedContentHTTPContracts(t *testing.T) {
 	require.Contains(t, document, "sources")
 	require.Equal(t, call(handler, "/md/start-here.md", bearer).Body.String(), document["markdown"])
 	skills := call(handler, "/skills/index.json", bearer)
-	require.JSONEq(t, `{"skills":[{"name":"example","description":"Operate this Project.","files":["SKILL.md","references/setup.md"]}]}`, skills.Body.String())
+	require.JSONEq(t, `{"lang":"en","skills":[{"name":"example","description":"Operate this Project.","files":["SKILL.md","references/setup.md"],"lang":"en","availableLangs":["en","ja"]}]}`, skills.Body.String())
 	require.JSONEq(t, skills.Body.String(), call(handler, apiBase+"/skills", bearer).Body.String())
 	for _, path := range []string{"/md/start-here", "/md/missing.md", apiBase + "/docs/missing", "/skills/example/missing.md", "/api/unknown"} {
 		response := call(handler, path, bearer)
 		require.Equal(t, 404, response.Code, path)
 		require.Contains(t, response.Body.String(), `"error":"not_found"`)
+	}
+}
+
+func TestLangSelectsJapaneseVariantsWithEnglishFallback(t *testing.T) {
+	environment(t)
+	handler := fixtureHandler(t, "valid", "https://api.example.test")
+	bearer := userBearer("user-one", "one@example.test")
+	withLanguage := func(path, acceptLanguage string) *httptest.ResponseRecorder {
+		r := httptest.NewRequest(http.MethodGet, path, nil)
+		r.Header.Set("Authorization", bearer)
+		r.Header.Set("Accept-Language", acceptLanguage)
+		w := httptest.NewRecorder()
+		handler.ServeHTTP(w, r)
+		return w
+	}
+
+	// Agent text routes: English by default, Japanese only through ?lang=ja.
+	japanese := call(handler, "/md/start-here.md?lang=ja", bearer)
+	require.Equal(t, 200, japanese.Code)
+	require.True(t, strings.HasPrefix(japanese.Body.String(), "`apth login --api-url https://api.example.test --project pj-test` を実行します。\n[はじめに](https://agent-guide.pj-test.example.test/md/start-here.md?lang=ja)"), japanese.Body.String())
+	require.Equal(t, "ja", japanese.Header().Get("Content-Language"))
+	require.Equal(t, "text/markdown; charset=utf-8", japanese.Header().Get("Content-Type"))
+	english := withLanguage("/md/start-here.md", "ja-JP,ja;q=0.9")
+	require.Equal(t, "Run `apth login --api-url https://api.example.test --project pj-test`.\n", english.Body.String())
+	require.Equal(t, "en", english.Header().Get("Content-Language"))
+	require.Equal(t, english.Body.String(), call(handler, "/md/start-here.md?lang=fr", bearer).Body.String())
+	fallback := call(handler, "/md/apth/install.md?lang=ja", bearer)
+	require.Equal(t, "Guide: https://agent-guide.pj-test.example.test\n", fallback.Body.String())
+	require.Equal(t, "en", fallback.Header().Get("Content-Language"))
+	require.Equal(t, 404, call(handler, "/md/start-here.ja.md", bearer).Code)
+	expected, err := os.ReadFile("internal/content/testdata/expected-llms.ja.txt")
+	require.NoError(t, err)
+	require.Equal(t, string(expected), call(handler, "/llms.txt?lang=ja", bearer).Body.String())
+	require.True(t, strings.HasPrefix(call(handler, "/llms-full.txt?lang=ja", bearer).Body.String(), "# はじめに\n\n"))
+	require.Contains(t, call(handler, "/skills/example/SKILL.md?lang=ja", bearer).Body.String(), "pj-test のために https://api.example.test へ接続します。")
+	require.Contains(t, withLanguage("/skills/example/SKILL.md", "ja").Body.String(), "Connect to https://api.example.test for pj-test.")
+	require.Equal(t, 404, call(handler, "/skills/example/SKILL.ja.md", bearer).Code)
+	require.Contains(t, call(handler, "/skills/index.json?lang=ja", bearer).Body.String(), `"description":"この Project を操作します。"`)
+
+	// SPA API: ?lang= wins, else Accept-Language, else English.
+	type docs struct {
+		Lang string           `json:"lang"`
+		Docs []map[string]any `json:"docs"`
+	}
+	var index docs
+	response := call(handler, apiBase+"/docs?lang=ja", bearer)
+	require.NoError(t, json.Unmarshal(response.Body.Bytes(), &index))
+	require.Equal(t, "ja", index.Lang)
+	require.Equal(t, "はじめに", index.Docs[0]["title"])
+	require.Equal(t, "ja", index.Docs[0]["lang"])
+	require.Equal(t, []any{"en", "ja"}, index.Docs[0]["availableLangs"])
+	require.Equal(t, "Install apth", index.Docs[1]["title"])
+	require.Equal(t, "en", index.Docs[1]["lang"])
+	require.Equal(t, []any{"en"}, index.Docs[1]["availableLangs"])
+	require.Contains(t, response.Header().Values("Vary"), "Accept-Language")
+	require.NoError(t, json.Unmarshal(withLanguage(apiBase+"/docs", "ja-JP,ja;q=0.9,en;q=0.8").Body.Bytes(), &index))
+	require.Equal(t, "ja", index.Lang)
+	require.NoError(t, json.Unmarshal(withLanguage(apiBase+"/docs?lang=en", "ja").Body.Bytes(), &index))
+	require.Equal(t, "en", index.Lang)
+	require.Equal(t, "Start here", index.Docs[0]["title"])
+	require.NoError(t, json.Unmarshal(call(handler, apiBase+"/docs", bearer).Body.Bytes(), &index))
+	require.Equal(t, "en", index.Lang)
+
+	var document map[string]any
+	require.NoError(t, json.Unmarshal(call(handler, apiBase+"/docs/start-here?lang=ja", bearer).Body.Bytes(), &document))
+	require.Equal(t, "はじめに", document["title"])
+	require.Equal(t, "ja", document["lang"])
+	require.Equal(t, []any{"en", "ja"}, document["availableLangs"])
+	require.Equal(t, japanese.Body.String(), document["markdown"])
+	require.NoError(t, json.Unmarshal(withLanguage(apiBase+"/docs/apth/install", "ja").Body.Bytes(), &document))
+	require.Equal(t, "en", document["lang"])
+	require.Equal(t, "Install apth", document["title"])
+	require.Contains(t, withLanguage(apiBase+"/skills", "ja").Body.String(), `"lang":"ja"`)
+}
+
+// The shipped guide renders in both languages and the Japanese locale is fully Japanese.
+func TestEmbeddedGuideRendersEveryDocumentAndSkillInJapanese(t *testing.T) {
+	values, err := render.NewValues("https://api.example.test", "pj-test", "https://agent-guide.pj-test.example.test", "0.1.0")
+	require.NoError(t, err)
+	catalog, err := content.Load(guidecontent.Files, values)
+	require.NoError(t, err)
+	english, japanese := catalog.Guide(content.English), catalog.Guide(content.Japanese)
+	require.Len(t, japanese.Docs, len(english.Docs))
+	for _, metadata := range japanese.Docs {
+		require.Equal(t, content.Japanese, metadata.Lang, "add content/%s.ja.md", metadata.Slug)
+		require.NotContains(t, japanese.Documents[metadata.Slug].Markdown, "{{", metadata.Slug)
+	}
+	for _, skill := range japanese.Skills {
+		require.Equal(t, content.Japanese, skill.Lang, "add content/skills/%s/SKILL.ja.md", skill.Name)
+		require.Contains(t, japanese.SkillFiles[skill.Name+"/SKILL.md"], "name: \""+skill.Name+"\"")
 	}
 }
 

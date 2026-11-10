@@ -13,9 +13,9 @@ import { AgentSetup } from '../setup/agent-setup'
  * can. A release without a Start here document still gets the panel.
  */
 export function HomePage() {
-  const { t } = useText()
+  const { t, language } = useText()
   useDocumentTitle(t('guide.nav.home'))
-  const start = useQuery(docQuery(START_HERE_SLUG))
+  const start = useQuery(docQuery(START_HERE_SLUG, language))
   return (
     <div className="max-w-4xl">
       <p className="mb-5 max-w-prose text-[15px] text-stone-600">{t('guide.home.lead')}</p>
