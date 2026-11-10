@@ -19,7 +19,9 @@ sources:
 
 **Required authority:** an operator-authorized identity, an exact management kubeconfig/context for PMC reads, or a product-issued Gateway kubeconfig for tenant reads. Shared PMC writes additionally require the environment's canonical PMC writer lease and explicit target-scoped mutation authority. **Agent Guide grants none of these.** A read-only guide key is not an operator credential.
 
-`apth` operates Project resources through the Public API. `apthctl` operates infrastructure and release lifecycle. Do not switch to the operator tool just because a developer API rejected a request.
+`apth` operates Project resources through the Public API and needs no kubeconfig. `apthctl` operates infrastructure and release lifecycle. If your task is Project work, this section does not apply: go back to [what apth covers]({{.PublicURL}}/md/apth/scope.md). Do not switch to the operator tool just because a developer API rejected a request.
+
+Never point `apthctl` at the default `~/.kube/config` or an ambient `KUBECONFIG`. A kubeconfig already on the machine likely belongs to another environment; use only the one issued for this environment, passed explicitly.
 
 ## Install
 

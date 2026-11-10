@@ -1,8 +1,8 @@
 ---
 name: "appthrust-operator-apthctl"
-description: "Use for authorized infrastructure diagnosis with apthctl, exact PMC or Gateway access, bounded evidence, and safe escalation; this skill grants no credentials, lease, or mutation authority."
+description: "Operators only, not for Project work with apth: requires a kubeconfig issued for this environment. Use for authorized infrastructure diagnosis with apthctl, exact PMC or Gateway access, bounded evidence, and safe escalation; this skill grants no credentials, lease, or mutation authority."
 title: "AppThrust operator diagnostics"
-summary: "Use for authorized infrastructure diagnosis with apthctl, exact PMC or Gateway access, bounded evidence, and safe escalation; this skill grants no credentials, lease, or mutation authority."
+summary: "Operators only, not for Project work with apth: requires a kubeconfig issued for this environment. Use for authorized infrastructure diagnosis with apthctl, exact PMC or Gateway access, bounded evidence, and safe escalation; this skill grants no credentials, lease, or mutation authority."
 audience: "operator"
 section: "apthctl"
 order: 100

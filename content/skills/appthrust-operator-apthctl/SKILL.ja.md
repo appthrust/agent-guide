@@ -1,8 +1,8 @@
 ---
 name: "appthrust-operator-apthctl"
-description: "apthctl による権限のあるインフラ診断、正確な PMC または Gateway アクセス、範囲を限定した証拠収集、安全なエスカレーションに使用します。このスキルは認証情報、リース、変更権限のいずれも付与しません。"
+description: "運用者専用です。apth による Project の作業には使いません。この環境用に発行された kubeconfig が必要です。apthctl による権限のあるインフラ診断、正確な PMC または Gateway アクセス、範囲を限定した証拠収集、安全なエスカレーションに使用します。このスキルは認証情報、リース、変更権限のいずれも付与しません。"
 title: "AppThrust 運用者向け診断"
-summary: "apthctl による権限のあるインフラ診断、正確な PMC または Gateway アクセス、範囲を限定した証拠収集、安全なエスカレーションに使用します。このスキルは認証情報、リース、変更権限のいずれも付与しません。"
+summary: "運用者専用です。apth による Project の作業には使いません。この環境用に発行された kubeconfig が必要です。apthctl による権限のあるインフラ診断、正確な PMC または Gateway アクセス、範囲を限定した証拠収集、安全なエスカレーションに使用します。このスキルは認証情報、リース、変更権限のいずれも付与しません。"
 audience: "operator"
 section: "apthctl"
 order: 100

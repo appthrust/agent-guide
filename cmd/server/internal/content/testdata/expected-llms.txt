@@ -1,6 +1,6 @@
 # Agent Guide
 
-> Environment-bound guide, skills and llms.txt for operating this AppThrust Project with apth and apthctl.
+> Environment-bound guide, skills and llms.txt for operating this AppThrust Project. Project work uses apth alone: the Platform API and a login, no kubeconfig. apthctl pages are for operators holding a kubeconfig issued for this environment.
 
 ## Start here
 
