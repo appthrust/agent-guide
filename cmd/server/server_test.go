@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -51,6 +52,28 @@ func call(handler http.Handler, path, bearer string) *httptest.ResponseRecorder 
 func userBearer(subject, email string) string {
 	claims, _ := json.Marshal(map[string]string{"sub": subject, "email": email, "name": "Display Name"})
 	return "Bearer eyJhbGciOiJub25lIn0." + base64.RawURLEncoding.EncodeToString(claims) + "."
+}
+
+func TestServerLogsFailedReadiness(t *testing.T) {
+	environment(t)
+	handler := fixtureHandler(t, "invalid-yaml", "https://api.example.test")
+	var logs bytes.Buffer
+	server := newServer(":0", handler, &logs)
+	response := call(server.Handler, "/readyz", "")
+	require.Equal(t, http.StatusServiceUnavailable, response.Code)
+
+	require.Equal(t, 1, bytes.Count(logs.Bytes(), []byte{'\n'}))
+	var entry struct {
+		Service   string `json:"service"`
+		Path      string `json:"path"`
+		Status    int    `json:"status"`
+		ErrorCode string `json:"error_code"`
+	}
+	require.NoError(t, json.Unmarshal(logs.Bytes(), &entry))
+	require.Equal(t, "agent-guide", entry.Service)
+	require.Equal(t, "/readyz", entry.Path)
+	require.Equal(t, response.Code, entry.Status)
+	require.Equal(t, "content_unavailable", entry.ErrorCode)
 }
 
 func TestPublicRoutesAndBearerBoundaries(t *testing.T) {
