@@ -139,6 +139,7 @@ type section struct{ Key, English, Japanese string }
 var sections = []section{
 	{"start-here", "Start here", "はじめに"},
 	{"apth", "apth", "apth"},
+	{"build", "Build on the Platform API", "Platform API を使った開発"},
 	{"apthctl", "apthctl (operators)", "apthctl（運用者向け）"},
 	{"concepts", "Concepts", "基本概念"},
 	{"lessons", "Lessons", "過去の教訓"},
@@ -150,8 +151,8 @@ func sectionOrder(key string) int {
 
 // indexText is the llms.txt wording that is not document content.
 var indexText = map[string]struct{ Lead, Skills string }{
-	English:  {"Environment-bound guide, skills and llms.txt for operating this AppThrust Project. Project work uses apth alone: the Platform API and a login, no kubeconfig. apthctl pages are for operators holding a kubeconfig issued for this environment.", "Skills"},
-	Japanese: {"この AppThrust Project を操作するための、この環境に合わせたガイド、スキル、llms.txt です。Project の作業は apth だけで行えます。必要なのは Platform API とログインで、kubeconfig は不要です。apthctl のページは、この環境用に発行された kubeconfig を持つ運用者向けです。", "スキル"},
+	English:  {"Environment-bound guide, skills and llms.txt for operating this AppThrust Project and building apps on its Platform API. Project work uses apth alone: the Platform API and a login, no kubeconfig. apthctl pages are for operators holding a kubeconfig issued for this environment.", "Skills"},
+	Japanese: {"この AppThrust Project を操作し、その Platform API を使うアプリを開発するための、この環境に合わせたガイド、スキル、llms.txt です。Project の作業は apth だけで行えます。必要なのは Platform API とログインで、kubeconfig は不要です。apthctl のページは、この環境用に発行された kubeconfig を持つ運用者向けです。", "スキル"},
 }
 
 func frontmatter(name, text string, target any, strict bool) (string, error) {

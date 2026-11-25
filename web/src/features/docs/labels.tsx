@@ -9,6 +9,7 @@ import { Badge, type BadgeTone } from '../../ui'
 const SECTION_LABELS: Record<string, MessageId> = {
   'start-here': 'guide.nav.home',
   apth: 'guide.section.apth',
+  build: 'guide.section.build',
   apthctl: 'guide.section.apthctl',
   concepts: 'guide.section.concepts',
   lessons: 'guide.section.lessons',
