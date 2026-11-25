@@ -85,6 +85,10 @@ With `apth` only (no kubeconfig):
 - Install a marketplace app: [marketplace cookbook]({{.PublicURL}}/md/apth/cookbook/marketplace-apps.md).
 - Explain a failed request or pending release: [troubleshooting]({{.PublicURL}}/md/apth/troubleshooting.md).
 
+Code inside an app (your own Application or a marketplace app):
+
+- Identify and authorize the app's users, or call the Platform API from the app: [build on the Platform API]({{.PublicURL}}/md/build/overview.md) and the [Platform API app skill]({{.PublicURL}}/skills/appthrust-platform-api-app/SKILL.md).
+
 Operators only (needs a kubeconfig issued for this environment; skip this for Project work):
 
 - Operate infrastructure with existing authority: [operator overview]({{.PublicURL}}/md/apthctl/overview.md).

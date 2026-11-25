@@ -18,6 +18,7 @@ export const commonMessages = defineDashboardMessages({
   'guide.nav.matches': { defaultMessage: '{count} matching documents', translations: { ja: '一致するドキュメント {count} 件' } },
   'guide.nav.clearFilter': { defaultMessage: 'Clear filter', translations: { ja: '絞り込みを解除' } },
   'guide.section.apth': { defaultMessage: 'apth', translations: { ja: 'apth' } },
+  'guide.section.build': { defaultMessage: 'Build on the Platform API', translations: { ja: 'Platform API を使った開発' } },
   'guide.section.apthctl': { defaultMessage: 'apthctl (operators)', translations: { ja: 'apthctl（運用者向け）' } },
   'guide.section.concepts': { defaultMessage: 'Concepts', translations: { ja: '基本概念' } },
   'guide.section.lessons': { defaultMessage: 'Lessons', translations: { ja: '過去の教訓' } },

@@ -85,6 +85,10 @@ unset assertion
 - Marketplace アプリをインストールする: [Marketplace クックブック]({{.PublicURL}}/md/apth/cookbook/marketplace-apps.md)
 - 失敗したリクエストや保留中のリリースを説明する: [トラブルシューティング]({{.PublicURL}}/md/apth/troubleshooting.md)
 
+アプリの中で動くコード（自分の Application、または Marketplace アプリ）:
+
+- アプリの利用者を識別して認可する、またはアプリから Platform API を呼ぶ: [Platform API を使った開発]({{.PublicURL}}/md/build/overview.md) と [Platform API アプリのスキル]({{.PublicURL}}/skills/appthrust-platform-api-app/SKILL.md)
+
 運用者のみ（この環境用に発行された kubeconfig が必要です。Project の作業では読み飛ばしてください）:
 
 - 既存の権限でインフラストラクチャを運用する: [運用者向け概要]({{.PublicURL}}/md/apthctl/overview.md)

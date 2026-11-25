@@ -185,16 +185,22 @@ content/
   apth/cookbook/access-keys.md
   apth/cookbook/operations-and-waits.md
   apth/troubleshooting.md              401 hint, 409 delivery_pending vs delivery_blocked, not Ready ladder
-  apthctl/overview.md                  section 2 "apthctl (operators)" operator
+  build/overview.md                    section 2 "Build on the Platform API" developer: code inside an app, not apth from a terminal
+  build/platform-connection.md         platform connection env, publish sign-in, the forwarded bearer
+  build/app-permissions.md             access model, acceptance, bindings, user-token exchange, Assertion
+  build/call-platform-api.md           Platform API audience, calling as the signed-in user, errors, idempotency
+  build/marketplace-app.md             catalog definition, env and HTTP contract, appserver-go, publication authority
+  apthctl/overview.md                  section 3 "apthctl (operators)" operator
   apthctl/pmc-update-and-releases.md
   apthctl/debug.md
   apthctl/authority-and-leases.md
-  concepts/model.md                    section 3 "Concepts"         both: Project, Application, Component, Stack, Publish, Marketplace, Operation
+  concepts/model.md                    section 4 "Concepts"         both: Project, Application, Component, Stack, Publish, Marketplace, Operation
   concepts/readiness.md                Pod Ready ≠ product Ready; settled; probes
-  lessons/*.md                         section 4 "Lessons"          both: distilled vault lessons, each with sources[]
+  lessons/*.md                         section 5 "Lessons"          both: distilled vault lessons, each with sources[]
   skills/appthrust-app-dev/SKILL.md    env-bound rewrite of apth-cli/skills/appthrust-app-dev
   skills/appthrust-marketplace-apps/SKILL.md
   skills/appthrust-operator-apthctl/SKILL.md
+  skills/appthrust-platform-api-app/SKILL.md   app-side integration: connection, permissions, Platform API calls
   **/<name>.ja.md                      Japanese variant beside every file above (start-here.ja.md, skills/<name>/SKILL.ja.md, …)
 ```
 

@@ -1,7 +1,8 @@
 # Agent Guide
 
 Agent Guide teaches coding agents to operate the current AppThrust Project with
-`apth` and `apthctl`. A Go server serves a React SPA, authenticated Markdown,
+`apth` and `apthctl`, and to build apps that use its Platform API. A Go server
+serves a React SPA, authenticated Markdown,
 `llms.txt`, downloadable skills, and the `/api/agent-guide/v1` API. Curated content
 is embedded in the image and rendered with the installation's environment values.
 There is no database, service credential, or platform write performed by the server.
@@ -23,7 +24,8 @@ The public Go SDK is `github.com/appthrust/appserver-go v0.3.0`, matching the Me
 template. No platform checkout, module replacement or private Go credential is
 needed to build. The launcher and i18n packages come from GitHub Packages.
 Content source references pin platform commits; the authoring snapshot is
-`1572ae7afa15df418cad36501f237b4595349428`.
+`1572ae7afa15df418cad36501f237b4595349428`, and the `build` section's is
+`e4df1169d00ac084a11874b5298b1c175e044074`.
 
 ## Develop
 
@@ -135,8 +137,8 @@ sources:
 
 Every document needs a title, summary, audience (`developer`, `operator`, `both`),
 section, explicit order, tags array and non-empty `sources`. Slugs are relative
-paths without `.md`. Sections sort as `start-here`, `apth`, `apthctl`, `concepts`,
-`lessons`, then numeric order, title and slug. Document API details omit order;
+paths without `.md`. Sections sort as `start-here`, `apth`, `build`, `apthctl`,
+`concepts`, `lessons`, then numeric order, title and slug. Document API details omit order;
 the index includes it. Sources name paths in the pinned platform Git revision.
 
 Only these Go template fields are allowed: `{{.PlatformAPIURL}}`,
